@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Task Manager",
   description: "A simple task manager built with atomic design, Redux, and shadcn UI",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
