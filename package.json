@@ -1,0 +1,34 @@
+{
+  "name": "jaseci-forge",
+  "version": "0.1.7",
+  "bin": "./index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "description": "A CLI tool to scaffold JaseciStack projects with customizable Front-End, Back-End, and Full-Stack templates.",
+  "keywords": [
+    "jaseci",
+    "cli",
+    "scaffold",
+    "nextjs",
+    "typescript",
+    "atomic-design",
+    "redux-toolkit",
+    "shadcn-ui",
+    "tailwindcss",
+    "storybook",
+    "react-testing-library"
+  ],
+  "homepage": "https://github.com/<your-username>/jaseci-forge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-username>/jaseci-forge.git"
+  },
+  "author": "Your Name <your-email@example.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
+    "@inquirer/prompts": "^5.0.0"
+  }
+}
