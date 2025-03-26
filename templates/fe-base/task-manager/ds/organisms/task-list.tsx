@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import type { Task } from "@/lib/redux/tasksSlice"
-import { TaskItem } from "@/components/molecules/task-item"
-import { Button } from "@/components/atoms/button"
+import { TaskItem } from "@/ds/molecules/task-item"
+import { Button } from "@/ds/atoms/button"
 import { Plus } from "lucide-react"
 import { TaskForm } from "./task-form"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/atoms/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select"
-import { Input } from "@/components/atoms/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ds/atoms/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ds/atoms/select"
+import { Input } from "@/ds/atoms/input"
 
 interface TaskListProps {
   tasks: Task[]

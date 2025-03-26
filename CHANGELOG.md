@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.9] - 2025-03-26
+### Added
+- Renamed `components` folder to `ds` (design system) in the generated project template for better clarity.
+
+## [0.1.8] - 2025-03-26
+### Changed
+- Simplified `README.md` for npm with minimal documentation.
+
 ## [0.1.7] - 2025-03-26
 ### Added
 - Enhanced `README.md` for npm with professional documentation, badges, and detailed sections.

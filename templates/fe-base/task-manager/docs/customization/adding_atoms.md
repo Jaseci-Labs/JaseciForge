@@ -4,7 +4,7 @@ This document explains how to add shadcn UI components as atoms in the Task Mana
 
 ## Overview
 
-In this project, we follow atomic design principles and install shadcn UI components directly into the `components/atoms` directory. This approach allows us to:
+In this project, we follow atomic design principles and install shadcn UI components directly into the `ds/atoms` directory. This approach allows us to:
 
 1. Keep all our atomic components in a single directory
 2. Maintain a clear separation between atoms, molecules, and organisms
@@ -18,14 +18,14 @@ To add a new shadcn UI component:
 npx shadcn@latest add [component-name]
 \`\`\`
 
-This will install the component directly to the `components/atoms` directory, as configured in `components.json`.
+This will install the component directly to the `ds/atoms` directory, as configured in `components.json`.
 
 ## Using shadcn UI Components
 
 After installation, you can import the component from the atoms directory:
 
 \`\`\`tsx
-import { Button } from "@/components/atoms/button"
+import { Button } from "@/ds/atoms/button"
 \`\`\`
 
 ## Example: Creating a Molecule with Atom Components
@@ -33,8 +33,8 @@ import { Button } from "@/components/atoms/button"
 Here's an example of how to create a molecule using shadcn UI atom components:
 
 \`\`\`tsx
-import { Button } from "@/components/atoms/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/atoms/card"
+import { Button } from "@/ds/atoms/button"
+import { Card, CardContent, CardFooter, CardHeader } from "@/ds/atoms/card"
 
 export function ExampleCard() {
   return (

@@ -2,9 +2,9 @@
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { addTask, toggleTaskCompletion, updateTask, deleteTask, type Task } from "@/lib/redux/tasksSlice"
-import { DashboardTemplate } from "@/components/templates/dashboard-template"
-import { TaskList } from "@/components/organisms/task-list"
-import { Button } from "@/components/atoms/button"
+import { DashboardTemplate } from "@/ds/templates/dashboard-template"
+import { TaskList } from "@/ds/organisms/task-list"
+import { Button } from "@/ds/atoms/button"
 import { MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 

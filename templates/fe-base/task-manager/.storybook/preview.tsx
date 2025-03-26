@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/ds/theme-provider"
 import { Provider } from "react-redux"
 import { store } from "@/lib/redux/store"
 import "@/app/globals.css"

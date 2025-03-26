@@ -63,12 +63,12 @@ program
         "@storybook/react": "^7.6.17",
         "storybook": "^7.6.17",
       };
-      await fs.ensureDir(path.join(targetDir, 'components', 'stories'));
+      await fs.ensureDir(path.join(targetDir, "ds", "stories"));
       await fs.writeFile(
-        path.join(targetDir, 'components', 'stories', 'Button.stories.tsx'),
+        path.join(targetDir, "ds", "stories", "Button.stories.tsx"),
         `import { Button } from '../atoms/button';\n\n` +
-        `export default { title: 'Atoms/Button', component: Button };\n` +
-        `export const Primary = { args: { children: 'Primary' } };`
+          `export default { title: 'Atoms/Button', component: Button };\n` +
+          `export const Primary = { args: { children: 'Primary' } };`
       );
     }
 
@@ -175,17 +175,29 @@ Dependencies have been automatically installed using ${packageManager}.
    \`\`\`
 2. **Start the development server**:
    \`\`\`bash
-   ${packageManager === 'npm' ? 'npm run' : packageManager} dev
+   ${packageManager === "npm" ? "npm run" : packageManager} dev
    \`\`\`
 
 ## Features
 - Next.js with TypeScript
-- Atomic Design structure (\`components/atoms/\`, \`molecules/\`, etc.)
+- Atomic Design structure (\`ds/atoms/\`, \`molecules/\`, etc.)
 - Redux Toolkit for state management (\`lib/redux/\`)
-- ShadCN UI components (\`components/atoms/\`, etc.)
+- ShadCN UI components (\`ds/atoms/\`, etc.)
 - Tailwind CSS for styling
-${storybook ? `- Storybook: \`${packageManager === 'npm' ? 'npm run' : packageManager} storybook\`` : ''}
-${testing ? `- Tests: \`${packageManager === 'npm' ? 'npm run' : packageManager} test\`` : ''}
+${
+  storybook
+    ? `- Storybook: \`${
+        packageManager === "npm" ? "npm run" : packageManager
+      } storybook\``
+    : ""
+}
+${
+  testing
+    ? `- Tests: \`${
+        packageManager === "npm" ? "npm run" : packageManager
+      } test\``
+    : ""
+}
 
 ## TaskForge Demo
 - Add tasks with a title.

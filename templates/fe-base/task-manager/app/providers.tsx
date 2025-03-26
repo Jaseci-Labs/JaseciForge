@@ -4,7 +4,7 @@ import type React from "react"
 
 import { Provider } from "react-redux"
 import { store } from "@/lib/redux/store"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/ds/theme-provider"
 
 interface ProvidersProps {
   children: React.ReactNode

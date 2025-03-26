@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import type { Task } from "@/lib/redux/tasksSlice"
-import { Button } from "@/components/atoms/button"
+import { Button } from "@/ds/atoms/button"
 import {
   Form,
   FormControl,
@@ -12,12 +12,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/atoms/form"
-import { Input } from "@/components/atoms/input"
-import { Textarea } from "@/components/atoms/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select"
-import { Calendar } from "@/components/atoms/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover"
+} from "@/ds/atoms/form"
+import { Input } from "@/ds/atoms/input"
+import { Textarea } from "@/ds/atoms/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ds/atoms/select"
+import { Calendar } from "@/ds/atoms/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/ds/atoms/popover"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"

@@ -1,4 +1,4 @@
-import { TaskManagerPage } from "@/components/pages/task-manager-page"
+import { TaskManagerPage } from "@/ds/pages/task-manager-page"
 
 export default function Home() {
   return <TaskManagerPage />
