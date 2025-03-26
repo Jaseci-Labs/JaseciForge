@@ -1,5 +1,5 @@
 {
-  "name": "jaseci-forge",
+  "name": "create-jaseci-app",
   "version": "0.1.7",
   "bin": "./index.js",
   "scripts": {
@@ -19,10 +19,10 @@
     "storybook",
     "react-testing-library"
   ],
-  "homepage": "https://github.com/<your-username>/jaseci-forge#readme",
+  "homepage": "https://github.com/<your-username>/create-jaseci-app#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-username>/jaseci-forge.git"
+    "url": "git+https://github.com/<your-username>/create-jaseci-app.git"
   },
   "author": "Your Name <your-email@example.com>",
   "license": "MIT",

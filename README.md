@@ -8,7 +8,7 @@ Jaseci Forge is a CLI tool to quickly set up JaseciStack Front-End projects. It 
 
 1. Run the CLI using `npx` (make sure you have Node.js installed):
    ```bash
-   npx jaseci-forge my-app
+   npx create-jaseci-app my-app
    ```
 
 2.Answer the prompts to customize your project:
