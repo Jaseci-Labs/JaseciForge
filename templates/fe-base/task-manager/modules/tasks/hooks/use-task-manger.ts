@@ -1,12 +1,12 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/redux/useStore";
+import { useAppDispatch, useAppSelector } from "@/store/useStore";
 import {
   addTask,
   deleteTask,
   toggleTaskCompletion,
   updateTask,
-} from "@/redux/tasksSlice";
+} from "@/store/tasksSlice";
 import type { TaskNode } from "@/nodes/task-node";
 
 export function useTaskManager() {

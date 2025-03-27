@@ -4,7 +4,8 @@ import { TaskHeader } from "../../../ds/molecules/task-header";
 import { TaskSidebar } from "../../../ds/molecules/task-sidebar";
 import { TaskList } from "../../../ds/organisms/task-list";
 import { DashboardTemplate } from "../../../ds/templates/dashboard-template";
-import { useTaskManager } from "../use-task-manger";
+import { useTaskManager } from "../hooks/use-task-manger";
+
 
 export function TaskManagerPage() {
   const { tasks, stats, actions } = useTaskManager();

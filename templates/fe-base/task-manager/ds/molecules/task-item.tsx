@@ -1,13 +1,13 @@
 "use client"
 
-import type { Task } from "@/redux/tasksSlice";
-import { Card, CardContent, CardFooter, CardHeader } from "@/ds/atoms/card"
-import { Checkbox } from "@/ds/atoms/checkbox"
-import { Button } from "@/ds/atoms/button"
-import { Badge } from "@/ds/atoms/badge"
-import { Edit, Trash2 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { cn } from "@/lib/utils"
+import type { Task } from "@/store/tasksSlice";
+import { Card, CardContent, CardFooter, CardHeader } from "@/ds/atoms/card";
+import { Checkbox } from "@/ds/atoms/checkbox";
+import { Button } from "@/ds/atoms/button";
+import { Badge } from "@/ds/atoms/badge";
+import { Edit, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/_core/utils";
 
 interface TaskItemProps {
   task: Task

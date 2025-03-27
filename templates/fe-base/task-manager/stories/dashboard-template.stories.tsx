@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { DashboardTemplate } from "./dashboard-template"
+import { DashboardTemplate } from "../ds/templates/dashboard-template";
 
 const meta: Meta<typeof DashboardTemplate> = {
   title: "Templates/DashboardTemplate",

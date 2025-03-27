@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { TaskForm } from "./task-form"
-import { action } from "@storybook/addon-actions"
+import type { Meta, StoryObj } from "@storybook/react";
+import { TaskForm } from "../ds/organisms/task-form";
+import { action } from "@storybook/addon-actions";
 
 const meta: Meta<typeof TaskForm> = {
   title: "Organisms/TaskForm",
@@ -9,17 +9,17 @@ const meta: Meta<typeof TaskForm> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof TaskForm>
+export default meta;
+type Story = StoryObj<typeof TaskForm>;
 
 export const NewTask: Story = {
   args: {
     onSubmit: action("onSubmit"),
     onCancel: action("onCancel"),
   },
-}
+};
 
 export const EditTask: Story = {
   args: {
@@ -34,5 +34,4 @@ export const EditTask: Story = {
     onSubmit: action("onSubmit"),
     onCancel: action("onCancel"),
   },
-}
-
+};

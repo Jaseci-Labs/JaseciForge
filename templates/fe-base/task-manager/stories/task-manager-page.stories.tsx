@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { TaskManagerPage } from "../modules/tasks/pages/task-manager-page";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import tasksReducer from "@/redux/tasksSlice";
+import tasksReducer from "@/store/tasksSlice";
 import { ThemeProvider } from "@/ds/theme-provider";
 
 // Create a mock store with some sample tasks

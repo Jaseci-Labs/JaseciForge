@@ -1,6 +1,5 @@
-import { TaskManagerPage } from "@/ds/pages/task-manager-page"
+import { TaskManagerPage } from "@/modules/tasks/pages/task-manager-page";
 
 export default function Home() {
-  return <TaskManagerPage />
+  return <TaskManagerPage />;
 }
-

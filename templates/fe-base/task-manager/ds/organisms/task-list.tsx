@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { Task } from "@/redux/tasksSlice";
+import type { Task } from "@/store/tasksSlice";
 import { TaskItem } from "@/ds/molecules/task-item"
 import { Button } from "@/ds/atoms/button"
 import { Plus } from "lucide-react"

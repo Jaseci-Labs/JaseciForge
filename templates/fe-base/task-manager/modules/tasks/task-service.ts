@@ -1,5 +1,5 @@
 import { user_api, walker_api } from "../../_core/api-client";
-import type { Task } from "@/redux/tasksSlice";
+import type { Task } from "@/store/tasksSlice";
 
 export const TasksApi = {
   getUserTasks: async () => {

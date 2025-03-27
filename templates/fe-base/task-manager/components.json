@@ -11,7 +11,7 @@
   },
   "aliases": {
     "components": "@/ds/atoms",
-    "utils": "@/lib/utils"
+    "utils": "@/_core/utils"
   },
   "componentPath": "ds/atoms"
 }
