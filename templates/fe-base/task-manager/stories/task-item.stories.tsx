@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { TaskItem } from "./task-item"
-import { action } from "@storybook/addon-actions"
+import type { Meta, StoryObj } from "@storybook/react";
+import { TaskItem } from "../ds/molecules/task-item";
+import { action } from "@storybook/addon-actions";
 
 const meta: Meta<typeof TaskItem> = {
   title: "Molecules/TaskItem",
@@ -9,10 +9,10 @@ const meta: Meta<typeof TaskItem> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof TaskItem>
+export default meta;
+type Story = StoryObj<typeof TaskItem>;
 
 const mockTask = {
   id: "1",
@@ -21,7 +21,7 @@ const mockTask = {
   completed: false,
   priority: "medium" as const,
   dueDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days from now
-}
+};
 
 export const Default: Story = {
   args: {
@@ -30,7 +30,7 @@ export const Default: Story = {
     onEdit: action("onEdit"),
     onDelete: action("onDelete"),
   },
-}
+};
 
 export const Completed: Story = {
   args: {
@@ -39,7 +39,7 @@ export const Completed: Story = {
     onEdit: action("onEdit"),
     onDelete: action("onDelete"),
   },
-}
+};
 
 export const HighPriority: Story = {
   args: {
@@ -48,5 +48,4 @@ export const HighPriority: Story = {
     onEdit: action("onEdit"),
     onDelete: action("onDelete"),
   },
-}
-
+};

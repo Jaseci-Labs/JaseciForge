@@ -10,7 +10,7 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/ds",
+    "components": "@/ds/atoms",
     "utils": "@/lib/utils"
   },
   "componentPath": "ds/atoms"

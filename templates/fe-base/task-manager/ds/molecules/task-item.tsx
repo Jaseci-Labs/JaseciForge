@@ -1,6 +1,6 @@
 "use client"
 
-import type { Task } from "@/lib/redux/tasksSlice"
+import type { Task } from "@/redux/tasksSlice";
 import { Card, CardContent, CardFooter, CardHeader } from "@/ds/atoms/card"
 import { Checkbox } from "@/ds/atoms/checkbox"
 import { Button } from "@/ds/atoms/button"

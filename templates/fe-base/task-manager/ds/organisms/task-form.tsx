@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import type { Task } from "@/lib/redux/tasksSlice"
+import type { Task } from "@/redux/tasksSlice";
 import { Button } from "@/ds/atoms/button"
 import {
   Form,

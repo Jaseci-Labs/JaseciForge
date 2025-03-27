@@ -11,6 +11,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.10] - 2025-03-26
+### Added
+- Remove `ds/stories` and `.storybook` folders from the generated project if Storybook is not selected.
+- Updated the generated project template to follow a modular structure with well-defined boundaries:
+  - Added `_core` folder for shared utilities, hooks, and API client.
+  - Organized business logic into `modules` (e.g., `tasks`, `users`) with hooks, pages, and services.
+  - Added `nodes` for data models (e.g., `task-node.ts`, `user-node.ts`).
+  - Moved state management to a dedicated `store` folder with Redux Toolkit slices.
+  - Maintained Atomic Design in `ds` (design system) for UI components.
+  
 ## [0.1.9] - 2025-03-26
 ### Added
 - Renamed `components` folder to `ds` (design system) in the generated project template for better clarity.

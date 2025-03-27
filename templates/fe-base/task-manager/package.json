@@ -50,6 +50,7 @@
       "next": "15.1.0",
       "next-themes": "latest",
       "react": "^19",
+      "axios": "^1.8.4",
       "react-day-picker": "latest",
       "react-dom": "^19",
       "react-hook-form": "latest",
