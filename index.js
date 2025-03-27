@@ -15,7 +15,12 @@ program
   .description('Generate a JaseciStack Front-End template')
   .action(async (appName) => {
     const targetDir = path.join(process.cwd(), appName);
-    const templateDir = path.join(__dirname, 'templates', 'fe-base', 'task-manager');
+    const templateDir = path.join(
+      __dirname,
+      "templates",
+      "fe-base",
+      "task-manager"
+    );
 
     // Ensure the template directory exists
     if (!fs.existsSync(templateDir)) {
@@ -25,31 +30,56 @@ program
 
     // Prompts using @inquirer/prompts
     const storybook = await confirm({
-      message: 'Would you like to include Storybook?',
+      message: "Would you like to include Storybook?",
       default: false,
     });
 
     const testing = await confirm({
-      message: 'Would you like to include React Testing Library?',
+      message: "Would you like to include React Testing Library?",
       default: false,
     });
 
     // Prompt for package manager
     const packageManager = await select({
-      message: 'Which package manager would you like to use?',
+      message: "Which package manager would you like to use?",
       choices: [
-        { name: 'npm', value: 'npm' },
-        { name: 'yarn', value: 'yarn' },
-        { name: 'pnpm', value: 'pnpm' },
+        { name: "npm", value: "npm" },
+        { name: "yarn", value: "yarn" },
+        { name: "pnpm", value: "pnpm" },
       ],
-      default: 'npm',
+      default: "npm",
     });
 
     // Copy base template
     await fs.copy(templateDir, targetDir);
 
+    // Remove Storybook-related folders if Storybook is not selected
+    if (!storybook) {
+      const storiesDir = path.join(targetDir, "stories");
+      const storybookConfigDir = path.join(targetDir, ".storybook");
+      try {
+        if (fs.existsSync(storiesDir)) {
+          await fs.remove(storiesDir);
+          console.log(
+            "Removed ds/stories folder as Storybook was not required."
+          );
+        }
+        if (fs.existsSync(storybookConfigDir)) {
+          await fs.remove(storybookConfigDir);
+          console.log(
+            "Removed .storybook folder as Storybook was not required."
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to remove Storybook-related folders:",
+          error.message
+        );
+      }
+    }
+
     // Modify package.json
-    const pkgPath = path.join(targetDir, 'package.json');
+    const pkgPath = path.join(targetDir, "package.json");
     const pkg = await fs.readJson(pkgPath);
     pkg.name = appName;
 
@@ -71,12 +101,6 @@ program
         ...pkg.devDependencies,
       };
       await fs.ensureDir(path.join(targetDir, "ds", "stories"));
-      await fs.writeFile(
-        path.join(targetDir, "ds", "atoms", "Button.stories.tsx"),
-        `import { Button } from '../atoms/button';\n\n` +
-          `export default { title: 'Atoms/Button', component: Button };\n` +
-          `export const Primary = { args: { children: 'Primary' } };`
-      );
     }
 
     if (testing) {
@@ -84,7 +108,7 @@ program
         ...pkg.devDependencies,
         "@testing-library/react": "^14.0.0",
         "@testing-library/jest-dom": "^6.0.0",
-        "jest": "^29.0.0",
+        jest: "^29.0.0",
         "jest-environment-jsdom": "^29.0.0",
       };
       // TaskItem.test.tsx already exists in the template, so no need to create it
@@ -95,19 +119,32 @@ program
     // Install dependencies
     console.log(`Installing dependencies using ${packageManager}...`);
     try {
-      const installCommand = packageManager === 'npm' ? 'npm install' : packageManager === 'yarn' ? 'yarn' : 'pnpm install';
+      const installCommand =
+        packageManager === "npm"
+          ? "npm install --legacy-peer-deps"
+          : packageManager === "yarn"
+          ? "yarn"
+          : "pnpm install";
       await execPromise(installCommand, { cwd: targetDir });
-      console.log('Dependencies installed successfully!');
+      console.log("Dependencies installed successfully!");
     } catch (error) {
-      console.error('Failed to install dependencies:', error.message);
-      console.log('You can manually install dependencies by running:');
-      console.log(`  cd ${appName} && ${packageManager === 'npm' ? 'npm install' : packageManager === 'yarn' ? 'yarn' : 'pnpm install'}`);
+      console.error("Failed to install dependencies:", error.message);
+      console.log("You can manually install dependencies by running:");
+      console.log(
+        `  cd ${appName} && ${
+          packageManager === "npm"
+            ? "npm install --legacy-peer-deps"
+            : packageManager === "yarn"
+            ? "yarn"
+            : "pnpm install"
+        }`
+      );
       process.exit(1);
     }
 
-    // Initialize and upgrade Storybook if selected
+    // Initialize Storybook if selected (do nothing further as per instruction)
     if (storybook) {
-      console.log('Initializing Storybook...');
+      console.log("Initializing Storybook...");
       try {
         const storybookInitCommand =
           packageManager === "npm"
@@ -117,12 +154,6 @@ program
             : "pnpm storybook init --no-dev";
         await execPromise(storybookInitCommand, { cwd: targetDir });
         console.log("Storybook initialized successfully!");
-
-        // Upgrade Storybook to the latest version
-        console.log("Upgrading Storybook to the latest version...");
-        // const storybookUpgradeCommand =  'npx storybook@latest upgrade';
-        // await execPromise(storybookUpgradeCommand, { cwd: targetDir });
-        console.log("Storybook upgraded successfully!");
 
         // Update Storybook configuration to enable storyStoreV7
         const storybookConfigPath = path.join(
@@ -151,24 +182,18 @@ program
           );
         }
       } catch (error) {
-        console.error(
-          "Failed to initialize or upgrade Storybook:",
-          error.message
-        );
-        console.log(
-          "You can manually initialize and upgrade Storybook by running:"
-        );
+        console.error("Failed to initialize Storybook:", error.message);
+        console.log("You can manually initialize Storybook by running:");
         console.log(
           `  cd ${appName} && ${
             packageManager === "npm" ? "npx" : packageManager
           } storybook init --no-dev`
         );
-        // console.log(`  ${packageManager === 'npm' ? 'npx' : packageManager} storybook@latest upgrade`);
       }
     }
 
     // Update README.md with clearer instructions
-    const readmePath = path.join(targetDir, 'README.md');
+    const readmePath = path.join(targetDir, "README.md");
     const readmeContent = `# ${appName}
 
 A JaseciStack Front-End project featuring TaskForge, a simple task manager built with Next.js.
@@ -215,14 +240,20 @@ ${
 
     // Provide clear next steps in the CLI output
     console.log(`\n🎉 Created ${appName} successfully! 🎉\n`);
-    console.log('Next steps:');
+    console.log("Next steps:");
     console.log(`  1. Navigate to the project directory:`);
     console.log(`     cd ${appName}`);
     console.log(`  2. Start the development server:`);
-    console.log(`     ${packageManager === 'npm' ? 'npm run' : packageManager} dev`);
+    console.log(
+      `     ${packageManager === "npm" ? "npm run" : packageManager} dev`
+    );
     if (storybook) {
       console.log(`  3. (Optional) Run Storybook to view components:`);
-      console.log(`     ${packageManager === 'npm' ? 'npm run' : packageManager} storybook`);
+      console.log(
+        `     ${
+          packageManager === "npm" ? "npm run" : packageManager
+        } storybook`
+      );
     }
   });
 
