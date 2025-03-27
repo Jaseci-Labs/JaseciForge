@@ -58,14 +58,21 @@ program
 
     if (storybook) {
       pkg.devDependencies = {
+        storybook: "^8.6.9",
+        "@chromatic-com/storybook": "^3",
+        "@storybook/addon-essentials": "^8.6.9",
+        "@storybook/addon-interactions": "^8.6.9",
+        "@storybook/addon-onboarding": "^8.6.9",
+        "@storybook/blocks": "^8.6.9",
+        "@storybook/nextjs": "^8.6.9",
+        "@storybook/react": "^8.6.9",
+        "@storybook/addon-actions": "^8.6.9",
+        "@storybook/test": "^8.6.9",
         ...pkg.devDependencies,
-        "@storybook/nextjs": "^7.6.17",
-        "@storybook/react": "^7.6.17",
-        "storybook": "^7.6.17",
       };
       await fs.ensureDir(path.join(targetDir, "ds", "stories"));
       await fs.writeFile(
-        path.join(targetDir, "ds", "stories", "Button.stories.tsx"),
+        path.join(targetDir, "ds", "atoms", "Button.stories.tsx"),
         `import { Button } from '../atoms/button';\n\n` +
           `export default { title: 'Atoms/Button', component: Button };\n` +
           `export const Primary = { args: { children: 'Primary' } };`

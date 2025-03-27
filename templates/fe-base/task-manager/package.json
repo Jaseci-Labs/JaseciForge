@@ -64,24 +64,10 @@
       "zod": "latest"
   },
   "devDependencies": {
-      "@chromatic-com/storybook": "^3",
-      "@storybook/addon-essentials": "^8.6.9",
-      "@storybook/addon-interactions": "^8.6.9",
-      "@storybook/addon-onboarding": "^8.6.9",
-      "@storybook/blocks": "^8.6.9",
-      "@storybook/nextjs": "^8.6.9",
-      "@storybook/react": "^8.6.9",
-      "@storybook/addon-actions": "^8.6.9",
-      "@storybook/test": "^8.6.9",
-      "@testing-library/jest-dom": "^6.0.0",
-      "@testing-library/react": "^14.0.0",
       "@types/node": "^22",
       "@types/react": "^19",
       "@types/react-dom": "^19",
-      "jest": "^29.0.0",
-      "jest-environment-jsdom": "^29.0.0",
       "postcss": "^8",
-      "storybook": "^8.6.9",
       "tailwindcss": "^3.4.17",
       "typescript": "^5"
   }
