@@ -1,0 +1,96 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        // Editor Configuration
+        "editor.fontSize": 14,
+        "editor.fontFamily": "Fira Code, Consolas, 'Courier New', monospace",
+        "editor.fontLigatures": true,
+        "editor.minimap.enabled": true,
+        "editor.wordWrap": "on",
+        "editor.formatOnSave": true,
+        "editor.suggestSelection": "first",
+        
+        // Appearance
+        "workbench.colorTheme": "Visual Studio Dark",
+        "workbench.iconTheme": "material-icon-theme",
+        
+        // File Exclusions
+        "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/.vscode": true,
+            "**/.idea": true,
+            "**/node_modules": true
+        },
+        
+        // Language-specific Settings
+        "files.associations": {
+            "*.js": "javascript",
+            "*.jsx": "javascriptreact",
+            "*.ts": "typescript",
+            "*.tsx": "typescriptreact",
+            "*.json": "json",
+            "*.md": "markdown"
+        },
+        
+        // Linting and Formatting
+        "eslint.validate": [
+            "javascript",
+            "javascriptreact",
+            "typescript",
+            "typescriptreact"
+        ],
+        "prettier.semi": true,
+        "prettier.singleQuote": true,
+        
+        // Terminal
+        "terminal.integrated.fontSize": 12,
+        "terminal.integrated.defaultProfile.windows": "PowerShell",
+        "terminal.integrated.defaultProfile.mac": "zsh",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        
+        // Git Configuration
+        "git.autofetch": true,
+        "git.confirmSync": false
+    },
+    
+    "extensions": {
+        "recommendations": [
+            // Code Quality and Formatting
+            "dbaeumer.vscode-eslint",
+            "esbenp.prettier-vscode",
+            "streetsidesoftware.code-spell-checker",
+            
+            // Language Support
+            "ms-python.python",
+            "ms-javascript.javascript",
+            "ms-typescript.typescript-5",
+            
+            // Productivity
+            "visualstudioexptteam.vscodeintellicode",
+            "usernamehw.errorlens",
+            "eamodio.gitlens",
+            
+            // Theme and Icons
+            "pkief.material-icon-theme",
+            
+            // Debuggers
+            "ms-python.debugpy",
+            
+            // Docker and Containers
+            "ms-azuretools.vscode-docker",
+            
+            // Additional Tools
+            "humao.rest-client",
+            "christian-kohler.path-intellisense",
+            "yzhang.markdown-all-in-one"
+        ]
+    }
+}
