@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Added `nodes` for data models (e.g., `task-node.ts`, `user-node.ts`).
   - Moved state management to a dedicated `store` folder with Redux Toolkit slices.
   - Maintained Atomic Design in `ds` (design system) for UI components.
+  - Add reuable templates
+  - Add basic autnetication
   
 ## [0.1.9] - 2025-03-26
 ### Added
