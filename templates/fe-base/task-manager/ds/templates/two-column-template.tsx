@@ -11,17 +11,17 @@ interface TwoColumnTemplateProps {
 export function TwoColumnTemplate({
   leftColumn,
   rightColumn,
-  leftWidth = "w-1/3",
+  leftWidth = "w-1/2",
 }: TwoColumnTemplateProps) {
   return (
-    <div className="min-h-screen flex">
+    <main className="min-h-screen flex">
       {/* Left column: Hidden on mobile, visible on medium screens and up */}
       <div className={`hidden md:block ${leftWidth} border-r bg-muted/20 p-4`}>
         {leftColumn}
       </div>
       {/* Right column: Takes remaining space, always visible */}
-      <main className="flex-1 p-6">{rightColumn}</main>
-    </div>
+      <div className="flex-1 p-6 ">{rightColumn}</div>
+    </main>
   );
 }
 

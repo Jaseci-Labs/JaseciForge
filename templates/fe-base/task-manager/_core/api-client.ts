@@ -1,4 +1,5 @@
 import axios from "axios";
+import { APP_KEYS } from "./keys";
 
 // Get the API URL from environment variables
 export const API_URL =
@@ -25,7 +26,7 @@ walker_api.interceptors.request.use(
   (config) => {
     // Only run on client side
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(APP_KEYS.TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -57,3 +58,5 @@ walker_api.interceptors.response.use(
   (response) => response,
   handleResponseError
 );
+
+

@@ -1,4 +1,6 @@
+import { AuthLeftCol } from "@/ds/molecules/auth-left-col";
 import { RegisterForm } from "@/ds/organisms/register-form";
+import { TwoColumnTemplate } from "@/ds/templates/two-column-template";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,12 +10,9 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/40">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold">Task Manager</h1>
-        <p className="text-muted-foreground">Create a new account</p>
-      </div>
-      <RegisterForm />
-    </div>
+    <TwoColumnTemplate
+      rightColumn={<RegisterForm />}
+      leftColumn={<AuthLeftCol />}
+    />
   );
 }

@@ -8,9 +8,7 @@ interface LoginCredentials {
   password: string;
 }
 
-interface RegisterData extends LoginCredentials {
-  name: string;
-}
+interface RegisterData extends LoginCredentials {}
 
 interface AuthResponse {
   token: string;
@@ -23,9 +21,10 @@ export const AuthService = {
 
     if (response.data.token) {
       localStorageUtil.setItem(APP_KEYS.TOKEN, response.data.token);
+      localStorageUtil.setItem(APP_KEYS.USER, response.data.user);
     }
 
-    return response.data;
+    return response.data.user;
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
@@ -40,25 +39,42 @@ export const AuthService = {
 
   logout: async (): Promise<void> => {
     localStorageUtil.removeItem(APP_KEYS.TOKEN);
+    localStorageUtil.removeItem(APP_KEYS.USER);
   },
 
-  getCurrentUser: async (): Promise<UserNode | null> => {
-    try {
-      const token = localStorageUtil.getItem<string>(APP_KEYS.TOKEN);
-      if (!token) {
-        return null;
-      }
+  changePassword: async (
+    oldPassword: string,
+    newPassword: string
+  ): Promise<void> => {
+    await user_api.post("/user/change_password", {
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
+  },
 
-      const response = await user_api.get("/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  forgotPassword: async (email: string): Promise<void> => {
+    await user_api.post("/user/forgot_password", { email });
+  },
 
-      return response.data;
-    } catch (error) {
-      localStorageUtil.removeItem(APP_KEYS.TOKEN);
+  resetPassword: async (token: string, password: string): Promise<void> => {
+    await user_api.post("/user/reset_password", { code: token, password });
+  },
+
+  getCurrentUser: (): UserNode | null => {
+    const token = localStorageUtil.getItem(APP_KEYS.TOKEN);
+    const user = localStorageUtil.getItem(APP_KEYS.USER);
+    if (!token || !user) {
       return null;
     }
+
+    return {
+      id: "",
+      email: "",
+      root_id: "",
+      is_activated: false,
+      is_admin: false,
+      expiration: 0,
+      state: "",
+    };
   },
 };

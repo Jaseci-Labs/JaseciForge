@@ -1,75 +1,65 @@
 "use client";
-
 import useAppNavigation from "@/_core/hooks/useAppNavigation";
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { AuthService } from "../auth-service";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+import { useAppDispatch, useAppSelector } from "@/store/useStore";
+import { setUser, resetSuccess } from "@/store/userSlice";
+import { loginUser, logoutUser, registerUser } from "../userActions";
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const users = useAppSelector((state) => state.users);
   const router = useAppNavigation();
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const currentUser = await AuthService.getCurrentUser();
-        setUser(currentUser);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
+      const currentUser = AuthService.getCurrentUser();
+      dispatch(setUser(currentUser));
     };
-
     checkAuth();
-  }, []);
+  }, [dispatch]);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await AuthService.login({ email, password });
-      setUser(response.user);
-      return response;
-    } finally {
-      setIsLoading(false);
+  // Handle navigation based on success
+  useEffect(() => {
+    if (users.success) {
+      if (users.successMessage === "Login successful") {
+        router.navigate("/");
+      } else if (users.successMessage === "Registration successful") {
+        router.navigate("/auth/login");
+      } else if (users.successMessage === "Logout successful") {
+        router.navigate("/auth/login");
+      }
+      dispatch(resetSuccess());
     }
-  };
+  }, [users.success, users.successMessage, router, dispatch]);
 
-  const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await AuthService.register({ name, email, password });
-      setUser(response.user);
-      return response;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const login = useCallback(
+    async (email: string, password: string) => {
+      dispatch(loginUser({ email, password }));
+    },
+    [dispatch]
+  );
 
-  const logout = async () => {
-    setIsLoading(true);
-    try {
-      await AuthService.logout();
-      setUser(null);
-      router.navigate("/auth/login");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const register = useCallback(
+    async (email: string, password: string) => {
+      console.log("registering");
+      dispatch(registerUser({ email, password }));
+    },
+    [dispatch]
+  );
+
+  const logout = useCallback(async () => {
+    dispatch(logoutUser());
+  }, [dispatch]);
 
   return {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
     login,
     register,
     logout,
+    isLoading: users.isLoading,
+    error: users.error,
+    data: users.user,
+    success: users.success,
+    successMessage: users.successMessage,
   };
 }

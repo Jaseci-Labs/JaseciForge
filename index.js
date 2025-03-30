@@ -148,10 +148,10 @@ program
       try {
         const storybookInitCommand =
           packageManager === "npm"
-            ? "npx storybook init --no-dev"
+            ? "npx storybook init --no-dev --skip-install"
             : packageManager === "yarn"
-            ? "yarn storybook init --no-dev"
-            : "pnpm storybook init --no-dev";
+            ? "yarn storybook init --no-dev --skip-install"
+            : "pnpm storybook init --no-dev --skip-install";
         await execPromise(storybookInitCommand, { cwd: targetDir });
         console.log("Storybook initialized successfully!");
 
@@ -161,33 +161,18 @@ program
           ".storybook",
           "main.js"
         );
-        if (fs.existsSync(storybookConfigPath)) {
-          let configContent = await fs.readFile(storybookConfigPath, "utf8");
-          if (configContent.includes("features:")) {
-            configContent = configContent.replace(
-              /features:\s*{[^}]*}/,
-              "features: { storyStoreV7: true }"
-            );
-          } else {
-            configContent = configContent.replace(
-              /module\.exports\s*=\s*{/,
-              "module.exports = {\n  features: { storyStoreV7: true },"
-            );
-          }
-          await fs.writeFile(storybookConfigPath, configContent);
-          console.log("Updated Storybook configuration to use storyStoreV7.");
-        } else {
+        if (!fs.existsSync(storybookConfigPath)) {
           console.warn(
             "Storybook configuration file (.storybook/main.js) not found. You may need to enable storyStoreV7 manually."
           );
-        }
+        } 
       } catch (error) {
         console.error("Failed to initialize Storybook:", error.message);
         console.log("You can manually initialize Storybook by running:");
         console.log(
           `  cd ${appName} && ${
             packageManager === "npm" ? "npx" : packageManager
-          } storybook init --no-dev`
+          } storybook init --no-dev --skip-install `
         );
       }
     }
