@@ -3,7 +3,7 @@ import type { Task } from "@/store/tasksSlice";
 
 export const TasksApi = {
   getUserTasks: async () => {
-    const response = await walker_api.get("/walker/tasks");
+    const response = await walker_api.post("/walker/tasks");
     return response.data;
   },
 
@@ -13,17 +13,17 @@ export const TasksApi = {
   },
 
   updateTask: async (id: string, task: Partial<Task>) => {
-    const response = await walker_api.put(`/walker/tasks/${id}`, task);
+    const response = await walker_api.post(`/walker/tasks/${id}`, task);
     return response.data;
   },
 
   deleteTask: async (id: string) => {
-    const response = await walker_api.delete(`/walker/tasks/${id}`);
+    const response = await walker_api.post(`/walker/tasks/${id}`);
     return response.data;
   },
 
   toggleTaskCompletion: async (id: string) => {
-    const response = await walker_api.patch(`/walker/tasks/${id}/toggle`);
+    const response = await walker_api.post(`/walker/tasks/${id}/toggle`);
     return response.data;
   },
 };
