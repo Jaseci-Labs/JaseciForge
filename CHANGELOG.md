@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+
+## [0.1.12] - 2025-04-02
+### Fixed
+- update API endpoints to POST in template
+
 ## [0.1.11] - 2025-04-02
 ### Added
 - Introduced a Profile section for user-related features
