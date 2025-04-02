@@ -6,6 +6,8 @@
 # next.js
 /.next/
 /out/
+https://www.npmjs.com/package/create-jaseci-app
+
 
 # production
 /build
@@ -18,6 +20,7 @@ yarn-error.log*
 
 # env files
 .env*
+
 
 # vercel
 .vercel
