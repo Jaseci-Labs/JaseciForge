@@ -60,3 +60,54 @@ export const checkAuthStatus = createAsyncThunk(
     return currentUser;
   }
 );
+
+export const changePassword = createAsyncThunk(
+  "user/changePassword",
+  async (
+    {
+      currentPassword,
+      newPassword,
+    }: { currentPassword: string; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await AuthService.changePassword(currentPassword, newPassword);
+      return null;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  "user/forgotPassword",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      await AuthService.forgotPassword(email);
+      return null;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to send reset email"
+      );
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  "user/resetPassword",
+  async (
+    { token, password }: { token: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await AuthService.resetPassword(token, password);
+      return null;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to reset password"
+      );
+    }
+  }
+);

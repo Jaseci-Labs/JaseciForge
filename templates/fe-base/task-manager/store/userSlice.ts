@@ -1,7 +1,10 @@
 import {
+  changePassword,
+  forgotPassword,
   loginUser,
   logoutUser,
   registerUser,
+  resetPassword,
 } from "@/modules/users/userActions";
 import { UserNode } from "@/nodes/user-node";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -96,6 +99,47 @@ export const userSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload as string;
       state.success = false;
+    });
+    // changePassword
+    // forgotPassword
+    // resetPassword
+    builder.addCase(changePassword.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(changePassword.fulfilled, (state) => {
+      state.isLoading = false;
+      state.success = true;
+      state.successMessage = "Password updated";
+    });
+    builder.addCase(changePassword.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+      state.success = false;
+    });
+    builder.addCase(forgotPassword.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(forgotPassword.fulfilled, (state) => {
+      state.isLoading = false;
+      state.success = true;
+      state.successMessage = "Reset email sent";
+    });
+    builder.addCase(forgotPassword.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+      state.success = false;
+    });
+    builder.addCase(resetPassword.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
     });
   },
 });

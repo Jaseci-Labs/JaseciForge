@@ -4,7 +4,14 @@ import { useEffect, useCallback } from "react";
 import { AuthService } from "../auth-service";
 import { useAppDispatch, useAppSelector } from "@/store/useStore";
 import { setUser, resetSuccess } from "@/store/userSlice";
-import { loginUser, logoutUser, registerUser } from "../userActions";
+import {
+  changePassword,
+  forgotPassword,
+  loginUser,
+  logoutUser,
+  registerUser,
+  resetPassword,
+} from "../userActions";
 
 export function useAuth() {
   const dispatch = useAppDispatch();
@@ -48,6 +55,24 @@ export function useAuth() {
     [dispatch]
   );
 
+  const change_password = useCallback(
+    async (oldPassword: string, newPassword: string) => {
+      dispatch(changePassword({ oldPassword, newPassword }));
+    },
+    []
+  );
+
+  const forgot_password = useCallback(async (email: string) => {
+    dispatch(forgotPassword(email));
+  }, []);
+
+  const reset_password = useCallback(
+    async (token: string, password: string) => {
+      dispatch(resetPassword({ token, password }));
+    },
+    []
+  );
+
   const logout = useCallback(async () => {
     dispatch(logoutUser());
   }, [dispatch]);
@@ -61,5 +86,8 @@ export function useAuth() {
     data: users.user,
     success: users.success,
     successMessage: users.successMessage,
+    change_password,
+    forgot_password,
+    reset_password,
   };
 }

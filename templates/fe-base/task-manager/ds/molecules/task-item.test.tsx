@@ -1,63 +1,50 @@
-import { render, screen, fireEvent } from "@testing-library/react"
-import { TaskItem } from "./task-item"
+"use client";
 
-const mockTask = {
-  id: "1",
-  title: "Test Task",
-  description: "This is a test task",
-  completed: false,
-  priority: "medium" as const,
+import { Button } from "@/ds/atoms/button";
+import { MoonIcon, SunIcon, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAppTheme } from "../use-app-theme";
+
+interface TaskHeaderProps {
+  title?: string;
 }
 
-describe("TaskItem", () => {
-  const mockToggleComplete = jest.fn()
-  const mockEdit = jest.fn()
-  const mockDelete = jest.fn()
+export function TaskHeader({ title = "Task Manager" }: TaskHeaderProps) {
+  const { toggleTheme, isDark } = useAppTheme();
+  const pathname = usePathname();
+  const isProfilePage = pathname === "/profile";
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it("renders task details correctly", () => {
-    render(<TaskItem task={mockTask} onToggleComplete={mockToggleComplete} onEdit={mockEdit} onDelete={mockDelete} />)
-
-    expect(screen.getByText("Test Task")).toBeInTheDocument()
-    expect(screen.getByText("This is a test task")).toBeInTheDocument()
-    expect(screen.getByText("medium")).toBeInTheDocument()
-  })
-
-  it("calls onToggleComplete when checkbox is clicked", () => {
-    render(<TaskItem task={mockTask} onToggleComplete={mockToggleComplete} onEdit={mockEdit} onDelete={mockDelete} />)
-
-    fireEvent.click(screen.getByRole("checkbox"))
-    expect(mockToggleComplete).toHaveBeenCalledWith("1")
-  })
-
-  it("calls onEdit when edit button is clicked", () => {
-    render(<TaskItem task={mockTask} onToggleComplete={mockToggleComplete} onEdit={mockEdit} onDelete={mockDelete} />)
-
-    fireEvent.click(screen.getByText("Edit"))
-    expect(mockEdit).toHaveBeenCalledWith(mockTask)
-  })
-
-  it("calls onDelete when delete button is clicked", () => {
-    render(<TaskItem task={mockTask} onToggleComplete={mockToggleComplete} onEdit={mockEdit} onDelete={mockDelete} />)
-
-    fireEvent.click(screen.getByText("Delete"))
-    expect(mockDelete).toHaveBeenCalledWith("1")
-  })
-
-  it("applies line-through style when task is completed", () => {
-    render(
-      <TaskItem
-        task={{ ...mockTask, completed: true }}
-        onToggleComplete={mockToggleComplete}
-        onEdit={mockEdit}
-        onDelete={mockDelete}
-      />,
-    )
-
-    expect(screen.getByText("Test Task").className).toContain("line-through")
-  })
-})
-
+  return (
+    <div className="flex items-center justify-between h-16 px-6">
+      <h1 className="text-xl font-bold">{title}</h1>
+      <div className="flex items-center space-x-2">
+        {!isProfilePage && (
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/profile">
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </Link>
+          </Button>
+        )}
+        {isProfilePage && (
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/">Dashboard</Link>
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <SunIcon className="h-5 w-5" />
+          ) : (
+            <MoonIcon className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}

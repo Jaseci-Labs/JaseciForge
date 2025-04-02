@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.11] - 2025-04-02
+### Added
+- Introduced a Profile section for user-related features
+- User action-related functionalities
+
 ## [0.1.10] - 2025-03-26
 ### Added
 - Remove `ds/stories` and `.storybook` folders from the generated project if Storybook is not selected.
@@ -22,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Maintained Atomic Design in `ds` (design system) for UI components.
   - Add reuable templates
   - Add basic autnetication
+  - Add proper organization
   
 ## [0.1.9] - 2025-03-26
 ### Added
