@@ -13,32 +13,24 @@ import {
 import { Input } from "@/ds/atoms/input";
 import { Label } from "@/ds/atoms/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ds/atoms/tabs";
-import { useAuth } from "@/modules/users/hooks/use-auth";
-import { useAppDispatch } from "@/store/useStore";
+import { useProfile } from "@/modules/users/hooks/use-profile";
 import { Lock, Mail, User } from "lucide-react";
-import { useState } from "react";
 
 export function ProfileSection() {
-  const dispatch = useAppDispatch();
-  const { change_password, data: user } = useAuth();
-  const [email, setEmail] = useState(user?.email || "");
-  const [name, setName] = useState(user?.email || "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleProfileSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // This would normally update the profile
-  };
-
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    dispatch(change_password(currentPassword, newPassword));
-  };
+  const {
+    email,
+    setEmail,
+    name,
+    setName,
+    currentPassword,
+    setCurrentPassword,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    handleProfileSubmit,
+    handlePasswordSubmit,
+  } = useProfile();
 
   return (
     <Tabs defaultValue="profile" className="mb-8">
