@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.14] - 2025-04-08
+### Fixed
+- protected routes
+
 ## [0.1.13] - 2025-04-02
 ### Fixed
 - add .env.exampele
