@@ -1,6 +1,6 @@
 {
   "name": "create-jaseci-app",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "bin": "./index.js",
   "scripts": {
     "start": "node index.js"

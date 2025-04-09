@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+
+## [0.1.15] - 2025-04-09
+### Fixed
+- fix auth token in walker_api interceptor
+
 ## [0.1.14] - 2025-04-08
 ### Fixed
 - protected routes

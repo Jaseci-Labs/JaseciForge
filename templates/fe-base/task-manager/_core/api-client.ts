@@ -26,7 +26,8 @@ walker_api.interceptors.request.use(
   (config) => {
     // Only run on client side
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem(APP_KEYS.TOKEN);
+      const token_obj = localStorage.getItem(APP_KEYS.TOKEN);
+      const token = token_obj ? JSON.parse(token_obj)?.value : null;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
