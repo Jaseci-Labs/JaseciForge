@@ -4,13 +4,37 @@ All notable changes to `create-jaseci-app` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+
 ### Planned
 - Add scope selection for Front-End, Back-End, and Full-Stack (Milestone 3)
 - Add email authentication and SSO support (Milestone 2)
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.16]
+### Added
+- Comprehensive architecture documentation in README.md
+  - Three-layer architecture (Presentation, Data, Service)
+  - Core infrastructure (`_core`) documentation
+  - Module structure and responsibilities
+  - Design System integration
+  - Type safety with node definitions
+- Detailed "How To" guide for feature development
+  - Step-by-step guide from node types to UI
+  - Complete flow from service to presentation layer
+  - Type safety and best practices
+  - Integration patterns and examples
+- Module structure documentation
+  - Actions and async thunks
+  - Custom hooks and data flow
+  - Schema validation
+  - Service layer integration
+- Redux implementation guide
+  - Type-safe actions and reducers
+  - Async thunk patterns
+  - State management best practices
+  - Custom hooks integration
 
 ## [0.1.15] - 2025-04-09
 ### Fixed
