@@ -3,39 +3,34 @@
 ## Overview
 The service layer handles all external communications and business logic. It provides a clean interface for interacting with APIs, managing data transformations, and implementing business rules.
 
+> **Note**: By default, we use Axios for HTTP requests, but the service layer is designed to be backend-agnostic. You can easily adapt it to use other technologies like GraphQL, React Query, or Firebase without changing any other layers of the application. This is achieved through our service abstraction pattern, where all external communication is encapsulated within the service layer.
+
 ## Directory Structure
 ```
-services/           # Service implementations
-├── api/           # API clients and configurations
-├── transformers/  # Data transformation utilities
-└── validators/    # Data validation utilities
+src/
+├── _core/                # Core infrastructure
+│   ├── api-client.ts     # Base API client configuration
+│   └── ...              # Other core utilities
+│
+├── modules/             # Feature modules
+│   ├── auth/           # Authentication module
+│   │   ├── services/   # Auth-specific services
+│   │   └── ...
+│   │
+│   ├── tasks/          # Tasks module
+│   │   ├── services/   # Task-specific services
+│   │   └── ...
+│   │
+│   └── users/          # Users module
+│       ├── services/   # User-specific services
+│       └── ...
 ```
 
 ## Core Components
 
-### 1. API Services
-- HTTP client configuration
-- API endpoint definitions
-- Request/response handling
-- Error management
-
-### 2. Data Transformers
-- Data normalization
-- Type conversions
-- Response formatting
-- Request payload preparation
-
-### 3. Validators
-- Input validation
-- Schema validation
-- Business rule validation
-- Error reporting
-
-## Implementation
-
-### 1. API Client
+### 1. Core API Client
 ```typescript
-// services/api/client.ts
+// src/_core/api-client.ts
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -45,34 +40,15 @@ const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
+// Add interceptors, error handling, etc.
 export default apiClient;
 ```
 
-### 2. Service Implementation
+### 2. Module-Specific Services
 ```typescript
-// services/taskService.ts
-import apiClient from './api/client';
-import { TaskNode } from '@/types';
+// src/modules/tasks/services/taskService.ts
+import apiClient from '@/core/api-client';
+import { TaskNode } from '../types';
 import { transformTask } from './transformers/taskTransformer';
 import { validateTask } from './validators/taskValidator';
 
@@ -82,197 +58,178 @@ export class TaskService {
     return response.data.map(transformTask);
   }
 
-  static async createTask(taskData: Partial<TaskNode>): Promise<TaskNode> {
-    const validationResult = validateTask(taskData);
-    if (!validationResult.isValid) {
-      throw new Error(validationResult.errors.join(', '));
-    }
-
-    const response = await apiClient.post('/tasks', taskData);
-    return transformTask(response.data);
-  }
-
-  static async updateTask(id: string, taskData: Partial<TaskNode>): Promise<TaskNode> {
-    const validationResult = validateTask(taskData);
-    if (!validationResult.isValid) {
-      throw new Error(validationResult.errors.join(', '));
-    }
-
-    const response = await apiClient.put(`/tasks/${id}`, taskData);
-    return transformTask(response.data);
-  }
-
-  static async deleteTask(id: string): Promise<void> {
-    await apiClient.delete(`/tasks/${id}`);
-  }
+  // ... other methods
 }
 ```
 
-### 3. Data Transformer
-```typescript
-// services/transformers/taskTransformer.ts
-import { TaskNode } from '@/types';
+## Implementation Guidelines
 
-export const transformTask = (data: any): TaskNode => {
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    status: data.status,
-    priority: data.priority,
-    dueDate: new Date(data.dueDate),
-    createdAt: new Date(data.createdAt),
-    updatedAt: new Date(data.updatedAt),
-  };
-};
+1. **Module Organization**
+   - Each module should have its own `services` directory
+   - Services should be scoped to their module's functionality
+   - Share common utilities through `_core`
+
+2. **Core Technology Usage**
+   - Always use `_core/api-client` for HTTP requests
+   - Don't create new API client instances in modules
+   - Extend core functionality when needed
+
+3. **Service Implementation**
+   - Keep services focused on module-specific logic
+   - Use transformers and validators within the module
+   - Handle module-specific errors
+
+## Example Module Structure
+
 ```
-
-### 4. Validator
-```typescript
-// services/validators/taskValidator.ts
-import { TaskNode } from '@/types';
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-export const validateTask = (data: Partial<TaskNode>): ValidationResult => {
-  const errors: string[] = [];
-
-  if (!data.title) {
-    errors.push('Title is required');
-  }
-
-  if (data.title && data.title.length > 100) {
-    errors.push('Title must be less than 100 characters');
-  }
-
-  if (data.dueDate && new Date(data.dueDate) < new Date()) {
-    errors.push('Due date must be in the future');
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-};
-```
-
-## Error Handling
-
-### 1. Custom Error Classes
-```typescript
-// services/errors/ServiceError.ts
-export class ServiceError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number,
-    public code: string
-  ) {
-    super(message);
-    this.name = 'ServiceError';
-  }
-}
-
-export class ValidationError extends ServiceError {
-  constructor(message: string) {
-    super(message, 400, 'VALIDATION_ERROR');
-  }
-}
-
-export class NotFoundError extends ServiceError {
-  constructor(message: string) {
-    super(message, 404, 'NOT_FOUND');
-  }
-}
-```
-
-### 2. Error Handling Middleware
-```typescript
-// services/middleware/errorHandler.ts
-import { ServiceError } from '../errors/ServiceError';
-
-export const handleServiceError = (error: unknown): never => {
-  if (error instanceof ServiceError) {
-    throw error;
-  }
-
-  if (error instanceof Error) {
-    throw new ServiceError(
-      error.message,
-      500,
-      'INTERNAL_SERVER_ERROR'
-    );
-  }
-
-  throw new ServiceError(
-    'An unexpected error occurred',
-    500,
-    'INTERNAL_SERVER_ERROR'
-  );
-};
+modules/tasks/
+├── services/
+│   ├── taskService.ts
+│   ├── transformers/
+│   │   └── taskTransformer.ts
+│   └── validators/
+│       └── taskValidator.ts
+├── types/
+│   └── index.ts
+└── index.ts
 ```
 
 ## Best Practices
 
-1. **API Design**
-   - Use consistent endpoint naming
-   - Implement proper error handling
-   - Use appropriate HTTP methods
-   - Follow RESTful principles
+1. **Module Isolation**
+   - Keep services within their module
+   - Don't share services between modules
+   - Use types from the module's types directory
 
-2. **Data Transformation**
-   - Keep transformations pure
-   - Handle edge cases
-   - Maintain type safety
-   - Document transformations
+2. **Core Integration**
+   - Use `_core` utilities consistently
+   - Don't duplicate core functionality
+   - Follow core patterns and conventions
 
-3. **Validation**
-   - Validate early
-   - Provide clear error messages
-   - Use schema validation
-   - Handle all edge cases
+3. **Error Handling**
+   - Use module-specific error types
+   - Handle errors at the service level
+   - Propagate errors appropriately
 
-4. **Error Handling**
-   - Use custom error classes
-   - Implement proper error logging
-   - Provide meaningful error messages
-   - Handle all error cases
+## Usage Example
 
-## Integration with Data Layer
-
-### 1. Redux Integration
 ```typescript
-// services/taskService.ts
-export const fetchTasks = async () => {
-  try {
-    const tasks = await TaskService.getTasks();
-    return tasks;
-  } catch (error) {
-    handleServiceError(error);
+// modules/tasks/actions/taskActions.ts
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { TaskService } from '../services/taskService';
+import { TaskNode } from '../types';
+
+// Action to fetch tasks
+export const fetchTasks = createAsyncThunk(
+  'tasks/fetchAll',
+  async (_, { rejectWithValue }) => {
+    try {
+      const tasks = await TaskService.getTasks();
+      return tasks;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to fetch tasks'
+      );
+    }
   }
+);
+
+// Action to create task
+export const createTask = createAsyncThunk(
+  'tasks/create',
+  async (taskData: Partial<TaskNode>, { rejectWithValue }) => {
+    try {
+      const task = await TaskService.createTask(taskData);
+      return task;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to create task'
+      );
+    }
+  }
+);
+
+// Action to update task
+export const updateTask = createAsyncThunk(
+  'tasks/update',
+  async (
+    { id, data }: { id: string; data: Partial<TaskNode> },
+    { rejectWithValue }
+  ) => {
+    try {
+      const task = await TaskService.updateTask(id, data);
+      return task;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to update task'
+      );
+    }
+  }
+);
+```
+
+### Using Actions in Components
+```typescript
+// modules/tasks/components/TaskList.tsx
+import { useAppDispatch, useAppSelector } from '@/core/hooks';
+import { fetchTasks } from '../actions/taskActions';
+
+export const TaskList = () => {
+  const dispatch = useAppDispatch();
+  const { tasks, loading, error } = useAppSelector((state) => state.tasks);
+
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      {tasks.map((task) => (
+        <TaskItem key={task.id} task={task} />
+      ))}
+    </div>
+  );
 };
 ```
 
-### 2. Custom Hook Integration
-```typescript
-// hooks/useTaskService.ts
-export const useTaskService = () => {
-  const dispatch = useAppDispatch();
+## Integration with Other Layers
 
-  const createTask = async (taskData: Partial<TaskNode>) => {
-    try {
-      const task = await TaskService.createTask(taskData);
-      dispatch(addTask(task));
-      return task;
-    } catch (error) {
-      handleServiceError(error);
-    }
-  };
+1. **Data Layer Integration**
+   - Services are called exclusively through Redux actions
+   - Actions act as the bridge between service and data layers
+   - Redux handles state management and side effects
+   - Components dispatch actions to trigger service calls
 
-  return {
-    createTask,
-  };
-};
-``` 
+2. **Presentation Layer Integration**
+   - Components use Redux hooks to access state
+   - Components dispatch actions to trigger service calls
+   - UI logic is completely separated from service logic
+   - Loading and error states are managed by Redux
+
+3. **Core Layer Integration**
+   - Services use core utilities consistently
+   - Actions use core hooks (useAppDispatch, useAppSelector)
+   - Maintain separation of concerns
+   - Follow unidirectional data flow
+
+## Best Practices
+
+1. **Service Layer**
+   - Keep services focused on API communication
+   - Handle data transformation and validation
+   - Throw appropriate errors for action handling
+
+2. **Action Layer**
+   - Create actions for all service operations
+   - Handle errors using rejectWithValue
+   - Provide meaningful error messages
+   - Keep action logic minimal
+
+3. **Component Layer**
+   - Never call services directly
+   - Use actions for all data operations
+   - Handle loading and error states
+   - Keep UI logic separate 
