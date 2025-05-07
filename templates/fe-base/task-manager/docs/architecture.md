@@ -1,102 +1,244 @@
-# Application Architecture Documentation
+# Application Architecture
 
 ## Overview
+The application follows a layered architecture pattern, consisting of four main layers:
+1. Presentation Layer
+2. Data Layer
+3. Service Layer
+4. Core Infrastructure
 
-This document outlines the architecture of the application, explaining the structure, key modules, and design patterns used.
+Each layer has specific responsibilities and interacts with other layers through well-defined interfaces.
 
-## Directory Structure
-
-The application follows a modular, feature-based architecture with a clear separation of concerns:
-
+## Architecture Diagram
 ```
-├── app                  # Next.js app directory (pages and routing)
-├── _core                # Core utilities and configurations
-├── ds                   # Design system components
-├── modules              # Feature modules
-├── nodes                # Data models/types
-├── store                # Redux state management
-├── styles               # Global styles
-└── stories              # Storybook stories
+┌─────────────────────────────────────────────────────────┐
+│                   Presentation Layer                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │   Atoms     │  │  Molecules  │  │    Organisms    │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                      Data Layer                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │   Store     │  │   Slices    │  │     Hooks      │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                     Service Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │    API      │  │ Transformers│  │   Validators    │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                  Core Infrastructure                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │    Auth     │  │    Config   │  │     Utils      │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Key Components
+## Layer Responsibilities
 
-### App (`/app`)
+### 1. Presentation Layer
+- User interface components
+- User interactions
+- State presentation
+- Component composition
+- Atomic design implementation
 
-The app directory follows Next.js App Router structure:
-- `/app/page.tsx` - Main application page
-- `/app/layout.tsx` - Root layout with providers
-- Feature-specific page routes (e.g., `/auth/login/page.tsx`)
+### 2. Data Layer
+- State management
+- Data flow
+- Action dispatching
+- State selectors
+- Redux integration
 
-### Core (`/_core`)
+### 3. Service Layer
+- API communication
+- Data transformation
+- Business logic
+- Validation
+- Error handling
 
-Contains application-wide utilities and configurations:
-- `api-client.ts` - API client for server communication
-- `app-configs.ts` - Application configurations
-- `useAppNavigation.ts` - Navigation hook for consistent routing
-- `useMaintenanceCheck.ts` - Hook to check app maintenance status
+### 4. Core Infrastructure
+- Authentication
+- Configuration
+- Routing
+- Shared utilities
+- Cross-cutting concerns
 
-### Design System (`/ds`)
+## Layer Interactions
 
-Organized following atomic design principles:
-- `/atoms` - Basic UI components (buttons, inputs, etc.)
-- `/molecules` - Combinations of atoms (task items, headers, etc.)
-- `/organisms` - Complex UI components (forms, lists, etc.)
-- `/templates` - Page layouts (two-column, centered, etc.)
-- `theme-provider.tsx` - Theme context provider
+### 1. Presentation → Data Layer
+```typescript
+// Example: Component using Redux state
+const TaskList = () => {
+  const tasks = useAppSelector(selectAllTasks);
+  const dispatch = useAppDispatch();
 
-### Modules (`/modules`)
+  return (
+    <div>
+      {tasks.map(task => (
+        <TaskCard
+          key={task.id}
+          task={task}
+          onUpdate={(task) => dispatch(updateTask(task))}
+        />
+      ))}
+    </div>
+  );
+};
+```
 
-Feature-based modules that encapsulate related functionality:
+### 2. Data → Service Layer
+```typescript
+// Example: Redux thunk using service
+export const fetchTasks = createAsyncThunk(
+  'tasks/fetchTasks',
+  async () => {
+    const tasks = await TaskService.getTasks();
+    return tasks;
+  }
+);
+```
 
-#### Users Module (`/modules/users`)
-- `auth-service.ts` - Authentication service
-- `/hooks` - Custom hooks for authentication
-  - `use-auth.ts` - Main authentication hook
-  - `use-login-form.ts` - Login form state management
-  - `use-register-form.ts` - Registration form state management
-- `/pages` - Page components
-- `/schemas` - Zod validation schemas
-
-#### Tasks Module (`/modules/tasks`)
-- `task-service.ts` - Task management service
-- `/hooks` - Task-related hooks
-- `/pages` - Task management pages
-
-### Nodes (`/nodes`)
-
-Contains type definitions for data models:
-- `user-node.ts` - User data structure
-- `task-node.ts` - Task data structure
-
-### Store (`/store`)
-
-Redux store implementation using Redux Toolkit:
-- `index.ts` - Store configuration
-- `userSlice.ts` - User state management
-- `tasksSlice.ts` - Tasks state management
-- `useStore.ts` - Custom hooks for accessing the store
+### 3. Service → Core Infrastructure
+```typescript
+// Example: Service using core utilities
+export class TaskService {
+  static async getTasks(): Promise<TaskNode[]> {
+    try {
+      const response = await apiClient.get('/tasks');
+      return response.data.map(transformTask);
+    } catch (error) {
+      throw handleError(error);
+    }
+  }
+}
+```
 
 ## Data Flow
 
-1. **User Interactions**: Handled by components in the design system
-2. **Business Logic**: Processed in modules through services and hooks
-3. **State Management**: Handled by Redux store using slices
-4. **API Communication**: Managed through services using the core API client
+1. **User Action Flow**
+   ```
+   User Action → Component → Redux Action → Service → API → Response → Store Update → UI Update
+   ```
 
-## Authentication Flow
+2. **Initial Load Flow**
+   ```
+   App Load → Route Guard → Auth Check → Data Fetch → Store Update → UI Render
+   ```
 
-1. User enters credentials in login/register forms
-2. Form submission is handled by form hooks (`use-login-form.ts`, `use-register-form.ts`)
-3. Auth hook (`use-auth.ts`) dispatches actions to Redux
-4. `userSlice.ts` processes actions and updates state
-5. Success/error states are used for navigation and UI updates
+3. **Error Flow**
+   ```
+   Error → Error Handler → Error State → Error UI → User Feedback
+   ```
 
-## Design Principles
+## Best Practices
 
-1. **Separation of Concerns**: Clear boundaries between UI, business logic, and data
-2. **Component-Based Architecture**: UI built from composable components
-3. **Feature-Based Modules**: Features encapsulated in self-contained modules
-4. **Atomic Design**: UI components organized by complexity level
-5. **Centralized State Management**: Redux for application-wide state
-6. **Form Abstraction**: Form logic extracted to custom hooks
+### 1. Layer Separation
+- Maintain clear boundaries between layers
+- Use interfaces for layer communication
+- Avoid direct dependencies between non-adjacent layers
+- Keep layer responsibilities focused
+
+### 2. State Management
+- Use Redux for global state
+- Keep UI state local when possible
+- Implement proper loading states
+- Handle errors consistently
+
+### 3. Type Safety
+- Use TypeScript throughout
+- Define proper interfaces
+- Implement proper error types
+- Use strict type checking
+
+### 4. Error Handling
+- Implement consistent error handling
+- Use proper error boundaries
+- Provide meaningful error messages
+- Handle all error cases
+
+### 5. Performance
+- Implement proper memoization
+- Use lazy loading
+- Optimize re-renders
+- Follow React best practices
+
+## Development Guidelines
+
+### 1. Component Development
+- Follow atomic design principles
+- Keep components focused
+- Implement proper prop validation
+- Use proper TypeScript types
+
+### 2. State Management
+- Use proper Redux patterns
+- Implement proper selectors
+- Handle async actions properly
+- Use proper middleware
+
+### 3. Service Development
+- Implement proper error handling
+- Use proper validation
+- Handle data transformation
+- Follow RESTful principles
+
+### 4. Testing
+- Write unit tests
+- Implement integration tests
+- Use proper mocking
+- Follow testing best practices
+
+## Directory Structure
+```
+src/
+├── components/     # Presentation Layer
+│   ├── atoms/
+│   ├── molecules/
+│   └── organisms/
+├── store/         # Data Layer
+│   ├── slices/
+│   └── hooks/
+├── services/      # Service Layer
+│   ├── api/
+│   └── transformers/
+└── core/          # Core Infrastructure
+    ├── auth/
+    ├── config/
+    └── utils/
+```
+
+## Getting Started
+
+1. **Setup**
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+2. **Development**
+   - Follow the layer structure
+   - Use proper TypeScript types
+   - Implement proper error handling
+   - Follow best practices
+
+3. **Testing**
+   ```bash
+   npm run test
+   npm run test:coverage
+   ```
+
+4. **Building**
+   ```bash
+   npm run build
+   npm run start
+   ```
