@@ -10,6 +10,15 @@ const sidebars: SidebarsConfig = {
 
     {
       type: "category",
+      label: "Features",
+      items: [
+        "features/authentication",
+        "features/testing",
+        "features/storybook",
+      ],
+    },
+    {
+      type: "category",
       label: "Architecture",
       items: [
         "layers/presentation-layer",
@@ -20,12 +29,8 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Features",
-      items: [
-        "features/authentication",
-        "features/testing",
-        "features/storybook",
-      ],
+      label: "Guides",
+      items: ["guides/quickstart-guide"],
     },
   ],
 };
