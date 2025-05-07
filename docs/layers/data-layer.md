@@ -1,208 +1,214 @@
 # Data Layer
 
 ## Overview
-The data layer manages application state and data flow using Redux Toolkit. It provides a centralized store for managing application state and implements actions and reducers for state modifications.
+The data layer manages application state and data flow using Redux Toolkit. It follows a clear pattern:
+1. Models/entities are defined in `nodes`
+2. State is managed in Redux `store`
+3. Actions connect to service layer for backend data
+4. Extra reducers automatically update store on action completion
+5. Presentation layer uses hooks to access and modify state
 
 ## Directory Structure
 ```
-store/              # Redux store configuration
-├── slices/         # Redux slices
-├── hooks/          # Custom Redux hooks
-└── middleware/     # Redux middleware
+src/
+├── nodes/           # Entity definitions
+│   ├── task-node.ts
+│   └── user-node.ts
+│
+├── store/           # Redux store
+│   ├── slices/      # Redux slices
+│   └── index.ts     # Store configuration
+│
+└── modules/         # Feature modules
+    └── tasks/
+        ├── actions/ # Redux actions
+        └── ...
 ```
 
-## Core Concepts
+## Core Components
 
-### 1. Redux Store
-- Centralized state management
-- Single source of truth
-- Predictable state updates
-- DevTools integration
+### 1. Entity Definitions (Nodes)
+```typescript
+// nodes/task-node.ts
+export interface TaskNode {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
 
-### 2. Redux Slices
-- Modular state management
-- Action creators
-- Reducers
-- Selectors
-
-### 3. Custom Hooks
-- Type-safe state access
-- Action dispatching
-- State selectors
-- Memoized values
-
-## Implementation
-
-### 1. Store Configuration
+### 2. Store Configuration
 ```typescript
 // store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
 import tasksReducer from './slices/tasksSlice';
-import authReducer from './slices/authSlice';
 
 export const store = configureStore({
   reducer: {
     tasks: tasksReducer,
-    auth: authReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(customMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 ```
 
-### 2. Slice Example
+### 3. Slice with Extra Reducers
 ```typescript
 // store/slices/tasksSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TaskNode } from '@/types';
+import { createSlice } from '@reduxjs/toolkit';
+import { TaskNode } from '@/nodes/task-node';
+import { fetchTasks, createTask } from '@/modules/tasks/actions/taskActions';
 
 interface TasksState {
-  items: TaskNode[];
-  loading: boolean;
+  tasks: TaskNode[];
+  isLoading: boolean;
   error: string | null;
 }
 
 const initialState: TasksState = {
-  items: [],
-  loading: false,
+  tasks: [],
+  isLoading: false,
   error: null,
 };
 
-const tasksSlice = createSlice({
+export const tasksSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
-    setTasks: (state, action: PayloadAction<TaskNode[]>) => {
-      state.items = action.payload;
-    },
-    addTask: (state, action: PayloadAction<TaskNode>) => {
-      state.items.push(action.payload);
-    },
-    updateTask: (state, action: PayloadAction<TaskNode>) => {
-      const index = state.items.findIndex(task => task.id === action.payload.id);
-      if (index !== -1) {
-        state.items[index] = action.payload;
+    // Local state modifications
+    toggleTaskCompletion: (state, action: PayloadAction<string>) => {
+      const task = state.tasks.find(task => task.id === action.payload);
+      if (task) {
+        task.completed = !task.completed;
       }
     },
   },
-});
-
-export const { setTasks, addTask, updateTask } = tasksSlice.actions;
-export default tasksSlice.reducer;
-```
-
-### 3. Custom Hooks
-```typescript
-// store/hooks/useAppDispatch.ts
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '../index';
-
-export const useAppDispatch = () => useDispatch<AppDispatch>();
-
-// store/hooks/useAppSelector.ts
-import { useSelector, TypedUseSelectorHook } from 'react-redux';
-import type { RootState } from '../index';
-
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-```
-
-## State Management Patterns
-
-### 1. Async Actions
-```typescript
-// store/slices/tasksSlice.ts
-export const fetchTasks = createAsyncThunk(
-  'tasks/fetchTasks',
-  async () => {
-    const response = await api.getTasks();
-    return response.data;
-  }
-);
-
-const tasksSlice = createSlice({
-  // ... other reducers
   extraReducers: (builder) => {
+    // Handle async actions
     builder
       .addCase(fetchTasks.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
+        state.error = null;
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
+        state.isLoading = false;
+        state.tasks = action.payload;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Handle other async actions...
   },
 });
 ```
 
-### 2. Selectors
+### 4. Actions (Service Layer Integration)
 ```typescript
-// store/selectors/taskSelectors.ts
-export const selectAllTasks = (state: RootState) => state.tasks.items;
-export const selectTaskById = (state: RootState, taskId: string) =>
-  state.tasks.items.find(task => task.id === taskId);
-export const selectTasksByStatus = (state: RootState, status: string) =>
-  state.tasks.items.filter(task => task.status === status);
-```
+// modules/tasks/actions/taskActions.ts
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { TaskService } from '../services/taskService';
+import { TaskNode } from '@/nodes/task-node';
 
-## Best Practices
-
-1. **State Structure**
-   - Normalize state shape
-   - Keep state minimal
-   - Use proper typing
-   - Implement proper error handling
-
-2. **Performance**
-   - Use memoized selectors
-   - Implement proper loading states
-   - Optimize re-renders
-   - Use proper middleware
-
-3. **Type Safety**
-   - Use TypeScript
-   - Define proper interfaces
-   - Use proper action types
-   - Implement proper error types
-
-4. **Testing**
-   - Test reducers
-   - Test selectors
-   - Test async actions
-   - Test middleware
-
-## Integration with Service Layer
-
-### 1. API Integration
-```typescript
-// store/slices/tasksSlice.ts
-export const createTask = createAsyncThunk(
-  'tasks/createTask',
-  async (taskData: TaskNode, { rejectWithValue }) => {
+export const fetchTasks = createAsyncThunk(
+  'tasks/fetchAll',
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.createTask(taskData);
-      return response.data;
+      const tasks = await TaskService.getTasks();
+      return tasks;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to fetch tasks'
+      );
     }
   }
 );
 ```
 
-### 2. Error Handling
+### 5. Presentation Layer Integration
 ```typescript
-// store/middleware/errorMiddleware.ts
-export const errorMiddleware = () => (next) => (action) => {
-  if (action.type.endsWith('/rejected')) {
-    // Handle error
-    console.error(action.payload);
-  }
-  return next(action);
+// modules/tasks/components/TaskList.tsx
+import { useAppDispatch, useAppSelector } from '@/core/hooks';
+import { fetchTasks } from '../actions/taskActions';
+
+export const TaskList = () => {
+  const dispatch = useAppDispatch();
+  const { tasks, isLoading, error } = useAppSelector((state) => state.tasks);
+
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      {tasks.map((task) => (
+        <TaskItem key={task.id} task={task} />
+      ))}
+    </div>
+  );
 };
-``` 
+```
+
+## Data Flow
+
+1. **Entity Definition**
+   - Define models in `nodes` directory
+   - Use TypeScript interfaces
+   - Keep models pure and focused
+
+2. **State Management**
+   - Store state in Redux slices
+   - Define initial state
+   - Handle loading and error states
+   - Use proper typing
+
+3. **Service Integration**
+   - Actions connect to service layer
+   - Handle async operations
+   - Proper error handling
+   - Type-safe parameters
+
+4. **State Updates**
+   - Extra reducers handle async actions
+   - Automatic state updates
+   - Loading state management
+   - Error handling
+
+5. **Presentation Layer**
+   - Use `useAppSelector` to read state
+   - Use `useAppDispatch` to trigger actions
+   - Handle loading states
+   - Display errors
+
+## Best Practices
+
+1. **Entity Definitions**
+   - Keep models in `nodes` directory
+   - Use TypeScript interfaces
+   - Document model properties
+   - Keep models focused
+
+2. **State Management**
+   - Normalize state shape
+   - Handle loading states
+   - Proper error handling
+   - Use proper typing
+
+3. **Actions**
+   - Connect to service layer
+   - Handle errors properly
+   - Use TypeScript
+   - Keep actions focused
+
+4. **Presentation Layer**
+   - Use hooks consistently
+   - Handle loading states
+   - Display errors
+   - Keep UI logic separate 
