@@ -117,7 +117,7 @@ my-app/
 ## Architecture
 The application follows a layered architecture pattern with clear separation of concerns. For detailed documentation on each layer, see:
 
-- [Architecture Overview](docs/architecture.md)
+- [Architecture Overview](architecture.md)
 - [Presentation Layer](docs/layers/presentation-layer.md)
 - [Data Layer](docs/layers/data-layer.md)
 - [Service Layer](docs/layers/service-layer.md)

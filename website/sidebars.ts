@@ -7,30 +7,35 @@ const sidebars: SidebarsConfig = {
       id: "index",
       label: "Introduction",
     },
-
     {
-      type: "category",
-      label: "Features",
-      items: [
-        "features/authentication",
-        "features/testing",
-        "features/storybook",
-      ],
+      type: "doc",
+      id: "architecture",
+      label: "Architecture Overview",
     },
     {
       type: "category",
       label: "Architecture",
       items: [
-        "layers/presentation-layer",
-        "layers/data-layer",
-        "layers/service-layer",
-        "layers/core-infrastructure",
+        "docs/layers/presentation-layer",
+        "docs/layers/data-layer",
+        "docs/layers/service-layer",
+        "docs/layers/core-infrastructure",
       ],
     },
     {
       type: "category",
+      label: "Features",
+      items: [
+        "docs/features/authentication",
+        "docs/features/testing",
+        "docs/features/storybook",
+      ],
+    },
+
+    {
+      type: "category",
       label: "Guides",
-      items: ["guides/quickstart-guide"],
+      items: ["docs/guides/quickstart-guide"],
     },
   ],
 };
