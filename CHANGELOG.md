@@ -12,6 +12,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.17]
+
+### Added
+- Added comprehensive documentation for service layer
+  - Clear explanation of service abstraction pattern
+  - Examples of module-specific services
+  - Integration with core layer
+  - Best practices for service implementation
+- Added comprehensive documentation for data layer
+  - Clear flow from nodes to store to actions
+  - Examples of entity definitions
+  - Integration with service layer
+  - Best practices for state management
+- Added golden rules section to README
+  - Rule about exposing third-party libraries through _core
+  - Examples of proper abstraction patterns
+  - Best practices for core layer usage
+
+### Changed
+- Updated service layer documentation
+  - Restructured to show module-specific services
+  - Added examples of service abstraction
+  - Improved integration patterns
+- Updated data layer documentation
+  - Added clear data flow explanation
+  - Improved examples of Redux integration
+  - Added best practices section
+- Updated README
+  - Added golden rules section
+  - Improved architecture documentation
+  - Added more examples
+
+### Fixed
+- Fixed service layer documentation to reflect actual architecture
+- Fixed data layer documentation to show correct flow
+- Fixed README to include core layer abstraction rules
+
 ## [0.1.16]
 ### Added
 - Comprehensive architecture documentation in README.md
@@ -111,21 +148,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Automatic dependency installation as part of the CLI execution.
 - Prompt for selecting package manager (npm, yarn, pnpm).
 
-## [0.1.0] - 2025-03-26
+## [0.1.0] - 2024-03-20
 ### Added
-- Initial release of `create-jaseci-app` CLI tool.
-- Front-End template generation with:
-  - Atomic Design structure (`atoms/`, `molecules/`, `organisms/`, `templates/`).
-  - Redux Toolkit for state management.
-  - ShadCN UI-ready setup (requires manual initialization).
-  - Pre-configured VS Code settings (`.vscode/settings.json`).
-- Interactive prompts for optional features:
-  - Storybook for component development.
-  - React Testing Library for testing.
-- "TaskForge" demo app as a starter:
-  - Simple task manager with add and toggle functionality.
-  - Demonstrates Atomic Design, Redux Toolkit, and optional Storybook/Testing.
-- Basic README with setup instructions.
+- Initial project setup
+- Basic project structure
+- Core documentation
+- Architecture overview
+- Layer documentation
+- Feature documentation
+- Testing documentation
+- Storybook documentation
 
 ### Fixed
 - Resolved `inquirer.prompt` error by switching to `@inquirer/prompts` for modern prompt handling.
