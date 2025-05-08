@@ -244,25 +244,94 @@ ${
 
 // Add new command for creating modules
 program
-  .command('add-module <module_name>')
-  .description('Add a new module to the JaseciStack application')
-  .option('--node <node_name>', 'Add a node for the module')
-  .option('--path <route_path>', 'Custom route path (e.g., "dashboard/products" or "(admin)/users")')
+  .command("add-module <module_name>")
+  .description("Add a new module to the JaseciStack application")
+  .option("--node <node_name>", "Add a node for the module")
+  .option(
+    "--path <route_path>",
+    'Custom route path (e.g., "dashboard/products" or "(admin)/users")'
+  )
+  .option(
+    "--apis <endpoints>",
+    'Comma-separated list of API endpoints (e.g., "list,get,create,update,delete")'
+  )
+  .option(
+    "--node-type <type_definition>",
+    'Custom node type definition (e.g., "id:string,name:string,price:number,status:active|inactive")'
+  )
   .action(async (moduleName, options) => {
     const targetDir = process.cwd();
-    const moduleDir = path.join(targetDir, 'modules', moduleName);
+    const moduleDir = path.join(targetDir, "modules", moduleName);
     const nodeName = options.node || moduleName;
-    const appDir = path.join(targetDir, 'app');
+    const appDir = path.join(targetDir, "app");
+
+    // Parse API endpoints
+    const defaultApis = ["getAll", "getById", "create", "update", "delete"];
+    const customApis = options.apis
+      ? options.apis.split(",").map((api) => api.trim())
+      : defaultApis;
+
+    // Parse node type definition
+    const defaultType = {
+      id: "string",
+      name: "string",
+      description: "string?",
+      created_at: "string",
+      updated_at: "string",
+      status: "active|inactive",
+    };
+
+    let nodeType = defaultType;
+    if (options.nodeType) {
+      nodeType = options.nodeType.split(",").reduce((acc, field) => {
+        const [name, type] = field.split(":").map((s) => s.trim());
+        acc[name] = type;
+        return acc;
+      }, {});
+    }
+
+    // Generate TypeScript type definition
+    const generateTypeDefinition = (type) => {
+      return Object.entries(type)
+        .map(([name, typeDef]) => {
+          const isOptional = typeDef.endsWith("?");
+          const cleanType = isOptional ? typeDef.slice(0, -1) : typeDef;
+
+          // Handle union types
+          if (cleanType.includes("|")) {
+            const unionTypes = cleanType
+              .split("|")
+              .map((t) => `'${t.trim()}'`)
+              .join(" | ");
+            return `  ${name}${isOptional ? "?" : ""}: ${unionTypes};`;
+          }
+
+          // Handle basic types
+          const tsType =
+            cleanType === "string"
+              ? "string"
+              : cleanType === "number"
+              ? "number"
+              : cleanType === "boolean"
+              ? "boolean"
+              : cleanType === "date"
+              ? "string"
+              : "any";
+
+          return `  ${name}${isOptional ? "?" : ""}: ${tsType};`;
+        })
+        .join("\n");
+    };
 
     try {
       // Create module directory structure
       const dirs = [
-        'actions',
-        'hooks',
-        'pages',
-        'schemas',
-        'services',
-        'utils'
+        "actions",
+        "hooks",
+        "pages",
+        "schemas",
+        "services",
+        "utils",
       ];
 
       // Create module directory and subdirectories
@@ -271,30 +340,104 @@ program
         await fs.ensureDir(path.join(moduleDir, dir));
       }
 
-      // Create node definition
-      const nodeContent = `export interface ${nodeName}Node {
-  id: string;
-  name: string;
-  description?: string;
-  created_at: string;
-  updated_at: string;
-  status: 'active' | 'inactive';
-}`;
-      await fs.writeFile(path.join(targetDir, 'nodes', `${nodeName.toLowerCase()}-node.ts`), nodeContent);
+      // Create node definition with custom type
+      const nodeContent = `export interface ${nodeName}Node {\n${generateTypeDefinition(
+        nodeType
+      )}\n}`;
+      await fs.writeFile(
+        path.join(targetDir, "nodes", `${nodeName.toLowerCase()}-node.ts`),
+        nodeContent
+      );
+
+      // Generate Zod schema based on type definition
+      const generateZodSchema = (type) => {
+        return Object.entries(type)
+          .map(([name, typeDef]) => {
+            const isOptional = typeDef.endsWith("?");
+            const cleanType = isOptional ? typeDef.slice(0, -1) : typeDef;
+
+            // Handle union types
+            if (cleanType.includes("|")) {
+              const unionTypes = cleanType
+                .split("|")
+                .map((t) => `'${t.trim()}'`)
+                .join(", ");
+              return `  ${name}: z.enum([${unionTypes}])${
+                isOptional ? ".optional()" : ""
+              },`;
+            }
+
+            // Handle basic types
+            const zodType =
+              cleanType === "string"
+                ? "z.string()"
+                : cleanType === "number"
+                ? "z.number()"
+                : cleanType === "boolean"
+                ? "z.boolean()"
+                : cleanType === "date"
+                ? "z.string()"
+                : "z.any()";
+
+            return `  ${name}: ${zodType}${isOptional ? ".optional()" : ""},`;
+          })
+          .join("\n");
+      };
+
+      // Generate service methods based on API endpoints
+      const serviceMethods = customApis
+        .map((api) => {
+          switch (api.toLowerCase()) {
+            case "getall":
+            case "list":
+              return `  static async getAll(): Promise<${nodeName}Node[]> {
+    const response = await apiClient.get('/${nodeName.toLowerCase()}s');
+    return response.data;
+  }`;
+            case "getbyid":
+            case "get":
+              return `  static async getById(id: string): Promise<${nodeName}Node> {
+    const response = await apiClient.get(\`/${nodeName.toLowerCase()}s/\${id}\`);
+    return response.data;
+  }`;
+            case "create":
+              return `  static async create(data: Omit<${nodeName}Node, 'id'>): Promise<${nodeName}Node> {
+    const response = await apiClient.post('/${nodeName.toLowerCase()}s', data);
+    return response.data;
+  }`;
+            case "update":
+              return `  static async update(id: string, data: Partial<${nodeName}Node>): Promise<${nodeName}Node> {
+    const response = await apiClient.put(\`/${nodeName.toLowerCase()}s/\${id}\`, data);
+    return response.data;
+  }`;
+            case "delete":
+              return `  static async delete(id: string): Promise<void> {
+    await apiClient.delete(\`/${nodeName.toLowerCase()}s/\${id}\`);
+  }`;
+            default:
+              return `  static async ${api}(data?: any): Promise<any> {
+    const response = await apiClient.${api.toLowerCase()}(\`/${nodeName.toLowerCase()}s\${data ? \`/\${data}\` : ''}\`);
+    return response.data;
+  }`;
+          }
+        })
+        .join("\n\n");
 
       // Create module files
       const files = {
-        'index.ts': `export * from './actions';\nexport * from './hooks';\nexport * from './services';\n`,
-        
-        'actions/index.ts': `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Service } from '../services';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example action\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Service.getAll();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`,
-        
-        'hooks/index.ts': `import { useAppDispatch, useAppSelector } from '@/store/hooks';\nimport { fetch${nodeName}s } from './actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
-        
-        'services/index.ts': `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { apiClient } from '@/core/api-client';\n\nexport class ${nodeName}Service {\n  static async getAll(): Promise<${nodeName}Node[]> {\n    const response = await apiClient.get('/${nodeName.toLowerCase()}s');\n    return response.data;\n  }\n\n  static async getById(id: string): Promise<${nodeName}Node> {\n    const response = await apiClient.get(\`/${nodeName.toLowerCase()}s/\${id}\`);\n    return response.data;\n  }\n\n  static async create(data: Omit<${nodeName}Node, 'id'>): Promise<${nodeName}Node> {\n    const response = await apiClient.post('/${nodeName.toLowerCase()}s', data);\n    return response.data;\n  }\n\n  static async update(id: string, data: Partial<${nodeName}Node>): Promise<${nodeName}Node> {\n    const response = await apiClient.put(\`/${nodeName.toLowerCase()}s/\${id}\`, data);\n    return response.data;\n  }\n\n  static async delete(id: string): Promise<void> {\n    await apiClient.delete(\`/${nodeName.toLowerCase()}s/\${id}\`);\n  }\n}\n`,
-        
-        'schemas/index.ts': `import { z } from 'zod';\n\nexport const ${nodeName}Schema = z.object({\n  id: z.string(),\n  name: z.string().min(1, 'Name is required'),\n  description: z.string().optional(),\n  created_at: z.string(),\n  updated_at: z.string(),\n  status: z.enum(['active', 'inactive']),\n});\n\nexport type ${nodeName} = z.infer<typeof ${nodeName}Schema>;\n`,
-        
-        'utils/index.ts': `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const format${nodeName} = (item: ${nodeName}Node) => ({\n  ...item,\n  created_at: new Date(item.created_at).toLocaleDateString(),\n  updated_at: new Date(item.updated_at).toLocaleDateString(),\n});\n`
+        "index.ts": `export * from './actions';\nexport * from './hooks';\nexport * from './services';\n`,
+
+        "actions/index.ts": `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Service } from '../services';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example action\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Service.getAll();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`,
+
+        "hooks/index.ts": `import { useAppDispatch, useAppSelector } from '@/store/hooks';\nimport { fetch${nodeName}s } from './actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
+
+        "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { apiClient } from '@/core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
+
+        "schemas/index.ts": `import { z } from 'zod';\n\nexport const ${nodeName}Schema = z.object({\n${generateZodSchema(
+          nodeType
+        )}\n});\n\nexport type ${nodeName} = z.infer<typeof ${nodeName}Schema>;\n`,
+
+        "utils/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const format${nodeName} = (item: ${nodeName}Node) => ({\n  ...item,\n  created_at: new Date(item.created_at).toLocaleDateString(),\n  updated_at: new Date(item.updated_at).toLocaleDateString(),\n});\n`,
       };
 
       for (const [filename, content] of Object.entries(files)) {
@@ -303,30 +446,36 @@ program
 
       // Create Redux slice
       const sliceContent = `import { createSlice, type PayloadAction } from '@reduxjs/toolkit';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { fetch${nodeName}s } from '../modules/${moduleName}/actions';\n\ninterface ${nodeName}State {\n  items: ${nodeName}Node[];\n  isLoading: boolean;\n  error: string | null;\n  success: boolean;\n  successMessage: string | null;\n}\n\nconst initialState: ${nodeName}State = {\n  items: [],\n  isLoading: false,\n  error: null,\n  success: false,\n  successMessage: null,\n};\n\nexport const ${nodeName.toLowerCase()}Slice = createSlice({\n  name: '${nodeName.toLowerCase()}',\n  initialState,\n  reducers: {\n    setItems: (state, action: PayloadAction<${nodeName}Node[]>) => {\n      state.items = action.payload;\n    },\n    setLoading: (state, action: PayloadAction<boolean>) => {\n      state.isLoading = action.payload;\n    },\n    setError: (state, action: PayloadAction<string | null>) => {\n      state.error = action.payload;\n      state.success = false;\n    },\n    resetSuccess: (state) => {\n      state.success = false;\n      state.successMessage = null;\n    },\n  },\n  extraReducers: (builder) => {\n    builder.addCase(fetch${nodeName}s.pending, (state) => {\n      state.isLoading = true;\n      state.error = null;\n      state.success = false;\n      state.successMessage = null;\n    });\n    builder.addCase(fetch${nodeName}s.fulfilled, (state, action) => {\n      state.isLoading = false;\n      state.items = action.payload;\n      state.success = true;\n      state.successMessage = '${nodeName}s fetched successfully';\n    });\n    builder.addCase(fetch${nodeName}s.rejected, (state, action) => {\n      state.isLoading = false;\n      state.error = action.payload as string;\n      state.success = false;\n    });\n  },\n});\n\nexport const { setItems, setLoading, setError, resetSuccess } = ${nodeName.toLowerCase()}Slice.actions;\nexport default ${nodeName.toLowerCase()}Slice.reducer;\n`;
-      
-      await fs.writeFile(path.join(targetDir, 'store', `${nodeName.toLowerCase()}Slice.ts`), sliceContent);
-      
+
+      await fs.writeFile(
+        path.join(targetDir, "store", `${nodeName.toLowerCase()}Slice.ts`),
+        sliceContent
+      );
+
       // Update store configuration
-      const storePath = path.join(targetDir, 'store', 'index.ts');
+      const storePath = path.join(targetDir, "store", "index.ts");
       if (fs.existsSync(storePath)) {
-        let storeContent = await fs.readFile(storePath, 'utf8');
-        
+        let storeContent = await fs.readFile(storePath, "utf8");
+
         // Add import
         const importStatement = `import ${nodeName.toLowerCase()}Reducer from './${nodeName.toLowerCase()}Slice';\n`;
         storeContent = importStatement + storeContent;
-        
+
         // Add reducer to store configuration
         storeContent = storeContent.replace(
           /reducer: {([^}]*)}/,
           `reducer: {$1\n    ${nodeName.toLowerCase()}: ${nodeName.toLowerCase()}Reducer,`
         );
-        
+
         await fs.writeFile(storePath, storeContent);
       }
 
       // Create a basic page component
       const pageContent = `import { use${nodeName}s } from '../hooks';\nimport { Card } from '@/ds/molecules/Card';\nimport { Button } from '@/ds/atoms/Button';\n\nexport default function ${nodeName}Page() {\n  const { items, isLoading, error, refresh } = use${nodeName}s();\n\n  if (isLoading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error}</div>;\n\n  return (\n    <div className="p-4">\n      <div className="flex justify-between items-center mb-4">\n        <h1 className="text-2xl font-bold">${nodeName}s</h1>\n        <Button onClick={refresh}>Refresh</Button>\n      </div>\n      <div className="grid gap-4">\n        {items.map((item) => (\n          <Card key={item.id}>\n            <h2 className="text-xl font-semibold">{item.name}</h2>\n            <p className="text-gray-600">{item.description}</p>\n            <div className="mt-2 text-sm text-gray-500">\n              Status: {item.status}\n            </div>\n          </Card>\n        ))}\n      </div>\n    </div>\n  );\n}\n`;
-      await fs.writeFile(path.join(moduleDir, 'pages', `${nodeName}Page.tsx`), pageContent);
+      await fs.writeFile(
+        path.join(moduleDir, "pages", `${nodeName}Page.tsx`),
+        pageContent
+      );
 
       // Create route in app directory
       const routePath = options.path || moduleName.toLowerCase();
@@ -335,20 +484,24 @@ program
 
       // Create page.tsx for the route
       const routePageContent = `import { ${nodeName}Page } from '@/modules/${moduleName}/pages/${nodeName}Page';\n\nexport default function Page() {\n  return <${nodeName}Page />;\n}\n`;
-      await fs.writeFile(path.join(routeDir, 'page.tsx'), routePageContent);
+      await fs.writeFile(path.join(routeDir, "page.tsx"), routePageContent);
 
       // Create layout.tsx for the route
       const routeLayoutContent = `import type { Metadata } from 'next';\n\nexport const metadata: Metadata = {\n  title: '${nodeName}s | Task Manager',\n  description: 'Manage your ${nodeName.toLowerCase()}s',\n};\n\nexport default function ${nodeName}Layout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n`;
-      await fs.writeFile(path.join(routeDir, 'layout.tsx'), routeLayoutContent);
+      await fs.writeFile(path.join(routeDir, "layout.tsx"), routeLayoutContent);
 
       console.log(`\n🎉 Module ${moduleName} created successfully! 🎉\n`);
-      console.log('Next steps:');
+      console.log("Next steps:");
       console.log(`  1. Access your module at /${routePath}`);
-      console.log(`  2. Customize the ${nodeName}Node interface in nodes/${nodeName.toLowerCase()}-node.ts`);
-      console.log(`  3. Implement your module's specific functionality in the created files`);
+      console.log(
+        `  2. Customize the ${nodeName}Node interface in nodes/${nodeName.toLowerCase()}-node.ts`
+      );
+      console.log(
+        `  3. Implement your module's specific functionality in the created files`
+      );
       console.log(`  4. Add more actions and reducers as needed in the slice`);
     } catch (error) {
-      console.error('Failed to create module:', error.message);
+      console.error("Failed to create module:", error.message);
       process.exit(1);
     }
   });
