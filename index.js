@@ -480,10 +480,34 @@ program
 
 import { ${
         requiresAuth ? "ProtectedRoute" : ""
-      }} from "@/ds/wrappers/prtoected-auth";
+      } from "@/ds/wrappers/prtoected-auth";
 import { Card } from '@/ds/molecules/Card';
 import { Button } from '@/ds/atoms/Button';
 import { use${nodeName}s } from '../hooks';
+
+/**
+ * ⚠️ WARNING: This is a basic template page.
+ * 
+ * You should replace these basic components with proper templates and design system components:
+ * - Replace the basic div structure with a proper Template (e.g., DashboardTemplate)
+ * - Replace Card with proper Organisms (e.g., ${nodeName}Card, ${nodeName}List)
+ * - Replace Button with proper Molecules (e.g., ActionButton, RefreshButton)
+ * - Add proper loading and error states using design system components
+ * 
+ * Example structure:
+ * <DashboardTemplate
+ *       header={<TaskHeader />}
+ *       sidebar={<TaskSidebar stats={stats} />}
+ *     >
+ *       <TaskList
+ *        tasks={tasks}
+ *         onAddTask={actions.addTask}
+ *         onUpdateTask={actions.updateTask}
+ *         onDeleteTask={actions.deleteTask}
+ *         onToggleComplete={actions.toggleComplete}
+ *       />
+      </DashboardTemplate>
+ */
 
 export default function ${nodeName}Page() {
   const { items, isLoading, error, refresh } = use${nodeName}s();
