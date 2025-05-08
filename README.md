@@ -69,9 +69,31 @@ npx create-jaseci-app add-module inventory --node=Product
 # Create a module with custom route path
 npx create-jaseci-app add-module users --path="(admin)/users"
 
-# Create a module with both custom node and path
-npx create-jaseci-app add-module orders --node=Order --path=dashboard/orders
+# Create a module with custom node type
+npx create-jaseci-app add-module products --node-type="id:string,name:string,price:number,description:string?,status:active|inactive"
+
+# Create a module with custom API endpoints
+npx create-jaseci-app add-module products --apis="list,get,create,update,delete"
+
+# Create a module without authentication
+npx create-jaseci-app add-module public --auth=no
+
+# Create a complete module with all options
+npx create-jaseci-app add-module inventory \
+  --node=Product \
+  --path=dashboard/inventory \
+  --node-type="id:string,name:string,price:number,description:string?,status:active|inactive" \
+  --apis="list,get,create,update,delete" \
+  --auth=yes
 ```
+
+### Module Creation Options
+
+- `--node <name>`: Specify a custom node name (defaults to module name)
+- `--path <path>`: Custom route path (e.g., "dashboard/products" or "(admin)/users")
+- `--node-type <type>`: Custom node type definition (e.g., "id:string,name:string,price:number,status:active|inactive")
+- `--apis <endpoints>`: Comma-separated list of API endpoints (e.g., "list,get,create,update,delete")
+- `--auth <yes|no>`: Whether to wrap the page with ProtectedRoute (default: yes)
 
 Each module comes with:
 - Complete CRUD operations
@@ -81,6 +103,7 @@ Each module comes with:
 - Custom React hooks
 - Route configuration
 - Basic UI components
+- Authentication protection (optional)
 
 ## 🏗️ Project Structure
 

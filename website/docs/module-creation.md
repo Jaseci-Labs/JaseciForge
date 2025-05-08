@@ -33,6 +33,54 @@ npx create-jaseci-app add-module users --path="(admin)/users"
 npx create-jaseci-app add-module orders --node=Order --path=dashboard/orders
 ```
 
+### `--node-type <type_definition>`
+Define a custom node type structure. Supports basic types, optional fields, and union types.
+
+```bash
+# Basic types
+npx create-jaseci-app add-module products --node-type="id:string,name:string,price:number"
+
+# With optional fields
+npx create-jaseci-app add-module products --node-type="id:string,name:string,description:string?,price:number"
+
+# With union types
+npx create-jaseci-app add-module products --node-type="id:string,name:string,status:active|inactive|pending"
+
+# Complete example
+npx create-jaseci-app add-module products --node-type="id:string,name:string,description:string?,price:number,status:active|inactive|pending,created_at:date,updated_at:date"
+```
+
+### `--apis <endpoints>`
+Specify custom API endpoints for the module. Defaults to standard CRUD operations if not provided.
+
+```bash
+# Default CRUD endpoints
+npx create-jaseci-app add-module products
+
+# Custom endpoints
+npx create-jaseci-app add-module products --apis="list,get,create,update,delete"
+
+# Minimal endpoints
+npx create-jaseci-app add-module products --apis="list,get"
+
+# Extended endpoints
+npx create-jaseci-app add-module products --apis="list,get,create,update,delete,search,filter"
+```
+
+### `--auth <yes|no>`
+Control whether the page should be wrapped with `ProtectedRoute`. Defaults to `yes`.
+
+```bash
+# Protected route (default)
+npx create-jaseci-app add-module products
+
+# Protected route (explicit)
+npx create-jaseci-app add-module products --auth=yes
+
+# Public route
+npx create-jaseci-app add-module public --auth=no
+```
+
 ## Generated Structure
 
 Each module comes with a complete structure:
@@ -55,9 +103,10 @@ export interface ProductNode {
   id: string;
   name: string;
   description?: string;
+  price: number;
+  status: 'active' | 'inactive' | 'pending';
   created_at: string;
   updated_at: string;
-  status: 'active' | 'inactive';
 }
 ```
 
@@ -115,6 +164,7 @@ Each generated module includes:
    - Next.js app router setup
    - Layout with metadata
    - Page component
+   - Optional authentication protection
 
 5. **UI Components**
    - Integration with design system
@@ -143,6 +193,7 @@ Each generated module includes:
    - Use route groups for organization
    - Keep routes consistent with module structure
    - Use proper metadata
+   - Consider authentication requirements
 
 ## Example Usage
 
@@ -151,19 +202,28 @@ Each generated module includes:
 npx create-jaseci-app add-module products
 ```
 
-2. Create a module with custom node:
+2. Create a module with custom node and type:
 ```bash
-npx create-jaseci-app add-module inventory --node=Product
+npx create-jaseci-app add-module inventory \
+  --node=Product \
+  --node-type="id:string,name:string,price:number,description:string?,status:active|inactive"
 ```
 
-3. Create a module with custom route:
+3. Create a module with custom route and auth:
 ```bash
-npx create-jaseci-app add-module users --path="(admin)/users"
+npx create-jaseci-app add-module users \
+  --path="(admin)/users" \
+  --auth=yes
 ```
 
 4. Create a complete module:
 ```bash
-npx create-jaseci-app add-module orders --node=Order --path=dashboard/orders
+npx create-jaseci-app add-module inventory \
+  --node=Product \
+  --path=dashboard/inventory \
+  --node-type="id:string,name:string,price:number,description:string?,status:active|inactive" \
+  --apis="list,get,create,update,delete" \
+  --auth=yes
 ```
 
 ## Next Steps
