@@ -18,6 +18,12 @@ const sidebars: SidebarsConfig = {
       id: "quickstart",
       label: "Quick Start",
     },
+    // module creation
+    {
+      type: "doc",
+      id: "module-creation",
+      label: "Module Creation",
+    },
     {
       type: "doc",
       id: "architecture",
