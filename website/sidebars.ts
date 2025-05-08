@@ -46,7 +46,42 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Guides",
-      items: ["docs/guides/quickstart-guide"],
+      items: [
+        "docs/guides/quickstart-guide",
+        "guides/building-fullstack-app-jac-cloud-jaseci-forge",
+      ],
+    },
+    {
+      type: "category",
+      label: "Concepts",
+      items: [
+        "concepts/atoms",
+        "concepts/molecules",
+        "concepts/ds",
+        "concepts/useAppNavigation",
+        "concepts/stories",
+        "concepts/nodes",
+        "concepts/templates",
+        "concepts/organisms",
+        "concepts/pages",
+        "concepts/hooks",
+        "concepts/state-management",
+        "concepts/theming",
+        "concepts/testing",
+        "concepts/routing",
+        "concepts/utilities",
+        "concepts/environment-variables",
+      ],
+    },
+    {
+      type: "category",
+      label: "Customization Guide",
+      items: [
+        "customization/theme-customization",
+        "customization/ui-library-customization",
+        "customization/replace-redux",
+        "customization/replace-service-layer",
+      ],
     },
   ],
 };

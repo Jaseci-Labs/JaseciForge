@@ -566,7 +566,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 56px 0 0 0;
+  padding: 56px 0 56px 0;
+
 }
 .quickStartCard {
   background: #151515;

@@ -116,4 +116,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Documentation](https://jaseci-forge.netlify.app/)
 - [GitHub Repository](https://github.com/yourusername/jaseci-forge)
 - [Issue Tracker](https://github.com/yourusername/jaseci-forge/issues)
-- [npm Package](https://www.npmjs.com/package/jaseci-forge)
+- [npm Package](https://www.npmjs.com/package/create-jaseci-app)
