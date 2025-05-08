@@ -12,6 +12,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
 
+## [0.1.19] - 2025-05-08
+### Added
+- New `add-module` command for rapid module creation
+  - Creates complete module structure with actions, hooks, pages, schemas, services, and utils
+  - Generates Redux slice with proper state management
+  - Sets up Next.js route with layout and page components
+  - Adds TypeScript interfaces and Zod validation schemas
+  - Integrates with design system components
+- Module creation options:
+  - `--node`: Custom node name for the module
+  - `--path`: Custom route path (supports nested routes and route groups)
+- Documentation updates:
+  - Added module creation examples to README
+  - Updated project structure documentation
+  - Added module system to features list
+
 ## [0.1.17]
 
 ### Added
