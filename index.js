@@ -259,11 +259,16 @@ program
     "--node-type <type_definition>",
     'Custom node type definition (e.g., "id:string,name:string,price:number,status:active|inactive")'
   )
+  .option(
+    "--auth <yes|no>",
+    "Whether to wrap the page with ProtectedRoute (default: yes)"
+  )
   .action(async (moduleName, options) => {
     const targetDir = process.cwd();
     const moduleDir = path.join(targetDir, "modules", moduleName);
     const nodeName = options.node || moduleName;
     const appDir = path.join(targetDir, "app");
+    const requiresAuth = options.auth !== "no"; // default to true if not explicitly set to 'no'
 
     // Parse API endpoints
     const defaultApis = ["getAll", "getById", "create", "update", "delete"];
@@ -471,7 +476,47 @@ program
       }
 
       // Create a basic page component
-      const pageContent = `import { use${nodeName}s } from '../hooks';\nimport { Card } from '@/ds/molecules/Card';\nimport { Button } from '@/ds/atoms/Button';\n\nexport default function ${nodeName}Page() {\n  const { items, isLoading, error, refresh } = use${nodeName}s();\n\n  if (isLoading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error}</div>;\n\n  return (\n    <div className="p-4">\n      <div className="flex justify-between items-center mb-4">\n        <h1 className="text-2xl font-bold">${nodeName}s</h1>\n        <Button onClick={refresh}>Refresh</Button>\n      </div>\n      <div className="grid gap-4">\n        {items.map((item) => (\n          <Card key={item.id}>\n            <h2 className="text-xl font-semibold">{item.name}</h2>\n            <p className="text-gray-600">{item.description}</p>\n            <div className="mt-2 text-sm text-gray-500">\n              Status: {item.status}\n            </div>\n          </Card>\n        ))}\n      </div>\n    </div>\n  );\n}\n`;
+      const pageContent = `"use client";
+
+import { ${
+        requiresAuth ? "ProtectedRoute" : ""
+      }} from "@/ds/wrappers/prtoected-auth";
+import { Card } from '@/ds/molecules/Card';
+import { Button } from '@/ds/atoms/Button';
+import { use${nodeName}s } from '../hooks';
+
+export default function ${nodeName}Page() {
+  const { items, isLoading, error, refresh } = use${nodeName}s();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  const pageContent = (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">${nodeName}s</h1>
+        <Button onClick={refresh}>Refresh</Button>
+      </div>
+      <div className="grid gap-4">
+        {items.map((item) => (
+          <Card key={item.id}>
+            <h2 className="text-xl font-semibold">{item.name}</h2>
+            <p className="text-gray-600">{item.description}</p>
+            <div className="mt-2 text-sm text-gray-500">
+              Status: {item.status}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  return ${
+    requiresAuth
+      ? "<ProtectedRoute>{pageContent}</ProtectedRoute>"
+      : "{pageContent}"
+  };
+}`;
       await fs.writeFile(
         path.join(moduleDir, "pages", `${nodeName}Page.tsx`),
         pageContent
