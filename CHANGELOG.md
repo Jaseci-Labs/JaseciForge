@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
 ### Planned
-- Add scope selection for Front-End, Back-End, and Full-Stack (Milestone 3)
+- handle module name with create module tool, and modiuels insie only if we are in app route
 - Add email authentication and SSO support (Milestone 2)
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
