@@ -396,32 +396,32 @@ program
             case "getall":
             case "list":
               return `  static async getAll(): Promise<${nodeName}Node[]> {
-    const response = await apiClient.get('/${nodeName.toLowerCase()}s');
+    const response = await private_api.post('/walker/${nodeName.toLowerCase()}s');
     return response.data;
   }`;
             case "getbyid":
             case "get":
               return `  static async getById(id: string): Promise<${nodeName}Node> {
-    const response = await apiClient.get(\`/${nodeName.toLowerCase()}s/\${id}\`);
+    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`);
     return response.data;
   }`;
             case "create":
               return `  static async create(data: Omit<${nodeName}Node, 'id'>): Promise<${nodeName}Node> {
-    const response = await apiClient.post('/${nodeName.toLowerCase()}s', data);
+    const response = await private_api.post('/walker/${nodeName.toLowerCase()}s', data);
     return response.data;
   }`;
             case "update":
               return `  static async update(id: string, data: Partial<${nodeName}Node>): Promise<${nodeName}Node> {
-    const response = await apiClient.put(\`/${nodeName.toLowerCase()}s/\${id}\`, data);
+    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`, data);
     return response.data;
   }`;
             case "delete":
               return `  static async delete(id: string): Promise<void> {
-    await apiClient.delete(\`/${nodeName.toLowerCase()}s/\${id}\`);
+    await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`);
   }`;
             default:
               return `  static async ${api}(data?: any): Promise<any> {
-    const response = await apiClient.${api.toLowerCase()}(\`/${nodeName.toLowerCase()}s\${data ? \`/\${data}\` : ''}\`);
+    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s\${data ? \`/\${data}\` : ''}\`);
     return response.data;
   }`;
           }
@@ -436,7 +436,7 @@ program
 
         "hooks/index.ts": `import { useAppDispatch, useAppSelector } from '@/store/hooks';\nimport { fetch${nodeName}s } from './actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
 
-        "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { apiClient } from '@/core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
+        "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { private_api } from '@/core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
 
         "schemas/index.ts": `import { z } from 'zod';\n\nexport const ${nodeName}Schema = z.object({\n${generateZodSchema(
           nodeType

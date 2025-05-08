@@ -6,7 +6,7 @@ export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Create a basic axios instance for user API calls (no auth)
-export const user_api = axios.create({
+export const public_api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
@@ -14,7 +14,7 @@ export const user_api = axios.create({
 });
 
 // Create an axios instance for walker API calls (with auth)
-export const walker_api = axios.create({
+export const private_api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
@@ -22,7 +22,7 @@ export const walker_api = axios.create({
 });
 
 // Add request interceptor to attach Bearer token from localStorage
-walker_api.interceptors.request.use(
+private_api.interceptors.request.use(
   (config) => {
     // Only run on client side
     if (typeof window !== "undefined") {
@@ -54,8 +54,11 @@ const handleResponseError = (error: any) => {
   return Promise.reject(error);
 };
 
-user_api.interceptors.response.use((response) => response, handleResponseError);
-walker_api.interceptors.response.use(
+public_api.interceptors.response.use(
+  (response) => response,
+  handleResponseError
+);
+private_api.interceptors.response.use(
   (response) => response,
   handleResponseError
 );

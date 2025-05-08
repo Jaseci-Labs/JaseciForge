@@ -7,17 +7,18 @@ const sidebars: SidebarsConfig = {
       id: "index",
       label: "Introduction",
     },
+    {
+      type: "doc",
+      id: "quickstart",
+      label: "Quick Start",
+    },
     // add for installation, quick start
     {
       type: "doc",
       id: "installation",
       label: "Installation",
     },
-    {
-      type: "doc",
-      id: "quickstart",
-      label: "Quick Start",
-    },
+
     // module creation
     {
       type: "doc",
@@ -26,8 +27,35 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "doc",
+      id: "ui-customization",
+      label: "Customizing UI",
+    },
+    {
+      type: "doc",
+      id: "routing",
+      label: "Routing",
+    },
+    {
+      type: "doc",
+      id: "protected-page",
+      label: "Protected Pages",
+    },
+    {
+      type: "doc",
       id: "architecture",
       label: "Architecture Overview",
+    },
+
+    {
+      type: "category",
+      label: "Build your first App",
+      items: [
+        "guides/step1-installation",
+        "guides/step2-module-creation",
+        "guides/step3-node-customization",
+        "guides/step4-ui-implementation",
+        "guides/step5-advanced-features",
+      ],
     },
     {
       type: "category",
@@ -49,14 +77,6 @@ const sidebars: SidebarsConfig = {
       ],
     },
 
-    {
-      type: "category",
-      label: "Guides",
-      items: [
-        "docs/guides/quickstart-guide",
-        "guides/building-fullstack-app-jac-cloud-jaseci-forge",
-      ],
-    },
     {
       type: "category",
       label: "Concepts",

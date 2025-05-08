@@ -1,5 +1,5 @@
 import { UserNode } from "@/nodes/user-node";
-import { user_api } from "../../_core/api-client";
+import { public_api } from "../../_core/api-client";
 import { localStorageUtil } from "@/_core/utils";
 import { APP_KEYS } from "@/_core/keys";
 
@@ -17,7 +17,7 @@ interface AuthResponse {
 
 export const AuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await user_api.post("/user/login", credentials);
+    const response = await public_api.post("/user/login", credentials);
 
     if (response.data.token) {
       localStorageUtil.setItem(APP_KEYS.TOKEN, response.data.token);
@@ -28,7 +28,7 @@ export const AuthService = {
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await user_api.post("/user/register", data);
+    const response = await public_api.post("/user/register", data);
 
     if (response.data.token) {
       localStorageUtil.setItem(APP_KEYS.TOKEN, response.data.token);
@@ -46,18 +46,18 @@ export const AuthService = {
     oldPassword: string,
     newPassword: string
   ): Promise<void> => {
-    await user_api.post("/user/change_password", {
+    await public_api.post("/user/change_password", {
       old_password: oldPassword,
       new_password: newPassword,
     });
   },
 
   forgotPassword: async (email: string): Promise<void> => {
-    await user_api.post("/user/forgot_password", { email });
+    await public_api.post("/user/forgot_password", { email });
   },
 
   resetPassword: async (token: string, password: string): Promise<void> => {
-    await user_api.post("/user/reset_password", { code: token, password });
+    await public_api.post("/user/reset_password", { code: token, password });
   },
 
   getCurrentUser: (): UserNode | null => {
