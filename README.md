@@ -1,6 +1,6 @@
 # Jaseci Forge
 
-[![npm version](https://badge.fury.io/js/jaseci-forge.svg)](https://badge.fury.io/js/jaseci-forge)
+[![npm version](https://badge.fury.io/js/jaseci-forge.svg)](https://badge.fury.io/js/create-jaseci-app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful CLI tool for rapidly bootstrapping modern front-end applications with Next.js, TypeScript, Redux Toolkit, and ShadCN UI.
@@ -25,6 +25,7 @@ npx create-jaseci-app my-app
 - **Component Development**: Storybook integration
 - **Authentication**: JWT-based auth system with RBAC
 - **Code Quality**: ESLint, Prettier, and Husky pre-configured
+- **Module System**: Rapid module creation with full CRUD, routing, and state management
 
 ## 📦 Installation
 
@@ -57,6 +58,30 @@ cd my-app
 npm run dev
 ```
 
+4. Create new modules:
+```bash
+# Create a basic module
+npx create-jaseci-app add-module products
+
+# Create a module with custom node
+npx create-jaseci-app add-module inventory --node=Product
+
+# Create a module with custom route path
+npx create-jaseci-app add-module users --path="(admin)/users"
+
+# Create a module with both custom node and path
+npx create-jaseci-app add-module orders --node=Order --path=dashboard/orders
+```
+
+Each module comes with:
+- Complete CRUD operations
+- Redux state management
+- Type-safe API services
+- Zod validation schemas
+- Custom React hooks
+- Route configuration
+- Basic UI components
+
 ## 🏗️ Project Structure
 
 ```
@@ -65,6 +90,13 @@ my-app/
 ├── ds/                 # Design System
 ├── app/                # Next.js app router
 ├── modules/            # Feature modules
+│   └── products/       # Example module
+│       ├── actions/    # Redux actions
+│       ├── hooks/      # Custom hooks
+│       ├── pages/      # Page components
+│       ├── schemas/    # Validation schemas
+│       ├── services/   # API services
+│       └── utils/      # Utilities
 ├── store/              # Redux store
 ├── nodes/              # Data models
 └── styles/             # Global styles
