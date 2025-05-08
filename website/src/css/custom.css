@@ -6,25 +6,93 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #ED4B34;
+  --ifm-color-primary-dark: #d43d27;
+  --ifm-color-primary-darker: #c93822;
+  --ifm-color-primary-darkest: #a52e1c;
+  --ifm-color-primary-light: #ef6a56;
+  --ifm-color-primary-lighter: #f07563;
+  --ifm-color-primary-lightest: #f49a8c;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #ED4B34;
+  --ifm-color-primary-dark: #d43d27;
+  --ifm-color-primary-darker: #c93822;
+  --ifm-color-primary-darkest: #a52e1c;
+  --ifm-color-primary-light: #ef6a56;
+  --ifm-color-primary-lighter: #f07563;
+  --ifm-color-primary-lightest: #f49a8c;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Custom styles */
+.navbar {
+  border-bottom: 2px solid var(--ifm-color-primary);
+}
+
+.footer {
+  border-top: 2px solid var(--ifm-color-primary);
+}
+
+.button {
+  background-color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+}
+
+.button:hover {
+  background-color: var(--ifm-color-primary-dark);
+  border-color: var(--ifm-color-primary-dark);
+}
+
+/* Hero section */
+.hero {
+  background-color: var(--ifm-color-primary-lightest);
+}
+
+.hero__title {
+  color: var(--ifm-color-primary-darkest);
+}
+
+/* Links */
+a {
+  color: var(--ifm-color-primary);
+}
+
+a:hover {
+  color: var(--ifm-color-primary-dark);
+  text-decoration: none;
+}
+
+/* Code blocks */
+code {
+  color: var(--ifm-color-primary);
+}
+
+/* Sidebar */
+.menu__link--active {
+  color: var(--ifm-color-primary);
+  border-left-color: var(--ifm-color-primary);
+}
+
+/* Pagination */
+.pagination-nav__link {
+  border-color: var(--ifm-color-primary);
+}
+
+.pagination-nav__link:hover {
+  background-color: var(--ifm-color-primary-lightest);
+}
+
+/* Cards */
+.card {
+  border-color: var(--ifm-color-primary-light);
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 8px var(--ifm-color-primary-light);
 }

@@ -7,6 +7,17 @@ const sidebars: SidebarsConfig = {
       id: "index",
       label: "Introduction",
     },
+    // add for installation, quick start
+    {
+      type: "doc",
+      id: "installation",
+      label: "Installation",
+    },
+    {
+      type: "doc",
+      id: "quickstart",
+      label: "Quick Start",
+    },
     {
       type: "doc",
       id: "architecture",

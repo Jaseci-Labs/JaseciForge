@@ -215,3 +215,433 @@
     font-size: 2rem;
   }
 }
+
+/* HERO SECTION */
+.heroSection {
+  background: #000;
+  color: #fff;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.heroInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroLogo {
+  margin-bottom: 32px;
+  display: block;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #fff;
+  letter-spacing: -2px;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: #d1d5db;
+  margin-bottom: 48px;
+  text-align: center;
+  max-width: 700px;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+.getStartedBtn {
+  background: #ED4B34;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.85rem 2.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(237, 75, 52, 0.10);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.getStartedBtn:hover {
+  background: #d43d27;
+  color: #fff;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(237, 75, 52, 0.18);
+}
+.arrow {
+  font-size: 1.3em;
+  margin-left: 0.2em;
+}
+
+.githubBtn {
+  background: transparent;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: 2px solid #222;
+  border-radius: 2rem;
+  padding: 0.85rem 2.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background 0.2s, border 0.2s, color 0.2s, transform 0.2s;
+}
+.githubBtn:hover {
+  background: #181818;
+  border-color: #ED4B34;
+  color: #ED4B34;
+  transform: translateY(-2px) scale(1.03);
+}
+.githubIcon {
+  margin-right: 0.3em;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .heroTitle {
+    font-size: 2.2rem;
+  }
+  .heroSubtitle {
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+  }
+  .heroButtons {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .getStartedBtn, .githubBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* FOR DEVELOPERS SECTION */
+.forDevSection {
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0 0 0;
+}
+
+.forDevCard {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  background: linear-gradient(135deg, #ED4B34 0%, #F75B2B 100%);
+  border-radius: 32px;
+  box-shadow: 0 4px 32px rgba(237, 75, 52, 0.10);
+  padding: 56px 64px;
+  max-width: 1200px;
+  width: 100%;
+  min-height: 380px;
+  gap: 48px;
+}
+
+.forDevLeft {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.forDevTitle {
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.forDevDesc {
+  color: #fff;
+  font-size: 1.18rem;
+  margin-bottom: 38px;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.forDevBtn {
+  background: #111;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.85rem 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.forDevBtn:hover {
+  background: #222;
+  color: #ED4B34;
+  transform: translateY(-2px) scale(1.03);
+}
+
+.forDevRight {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.terminalWindow {
+  background: rgba(0,0,0,0.13);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  padding: 24px 28px 18px 28px;
+  min-width: 340px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.terminalHeader {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.terminalCode {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 1rem;
+  color: #fff;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+.terminalCode .success {
+  color: #61C454;
+}
+.terminalCode .command {
+  color: #F6A04D;
+}
+.terminalCode .info {
+  color: #fff;
+}
+
+@media (max-width: 1100px) {
+  .forDevCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 40px 24px;
+    gap: 32px;
+  }
+  .forDevRight {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .forDevCard {
+    padding: 24px 8px;
+    border-radius: 18px;
+    min-height: unset;
+  }
+  .terminalWindow {
+    min-width: 0;
+    max-width: 100%;
+    padding: 16px 8px 10px 8px;
+  }
+  .forDevTitle {
+    font-size: 1.3rem;
+  }
+  .forDevDesc {
+    font-size: 1rem;
+    margin-bottom: 22px;
+  }
+}
+
+/* ENTERPRISE-READY ARCHITECTURE SECTION */
+.featuresSection {
+  background: #000;
+  padding: 64px 0 0 0;
+}
+.featuresHeader {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.featuresTitle {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.featuresSubtitle {
+  color: #d1d5db;
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+.featuresGrid {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.featureCardDark {
+  background: #181818;
+  border: 1.5px solid #292929;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  padding: 36px 28px 32px 28px;
+  min-width: 260px;
+  max-width: 320px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: border 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.featureCardDark:hover {
+  border: 1.5px solid #ED4B34;
+  box-shadow: 0 4px 24px rgba(237, 75, 52, 0.10);
+  transform: translateY(-4px) scale(1.03);
+}
+.featureIconCircle {
+  background: rgba(237, 75, 52, 0.10);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.featureCardTitle {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.featureCardDesc {
+  color: #d1d5db;
+  font-size: 1.08rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+  .featuresGrid {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .featureCardDark {
+    max-width: 420px;
+    width: 100%;
+  }
+}
+
+/* QUICK START SECTION */
+.quickStartSection {
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 56px 0 0 0;
+}
+.quickStartCard {
+  background: #151515;
+  border-radius: 28px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  padding: 48px 36px 36px 36px;
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0 24px;
+}
+.quickStartTitle {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.quickStartSubtitle {
+  color: #d1d5db;
+  font-size: 1.18rem;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 32px;
+}
+.quickStartCodeBlockWrapper {
+  width: 100%;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+}
+.quickStartCodeBlock {
+  background: #000;
+  color: #fff;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 1.15rem;
+  border-radius: 16px;
+  padding: 18px 32px;
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  box-sizing: border-box;
+  text-align: left;
+}
+.quickStartBtn {
+  background: #ED4B34;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.85rem 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(237, 75, 52, 0.10);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  margin-top: 8px;
+  margin-left: 8px;
+}
+.quickStartBtn:hover {
+  background: #d43d27;
+  color: #fff;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(237, 75, 52, 0.18);
+}
+@media (max-width: 900px) {
+  .quickStartCard {
+    padding: 32px 8px 24px 8px;
+  }
+  .quickStartCodeBlock {
+    padding: 12px 8px;
+    font-size: 1rem;
+  }
+}
