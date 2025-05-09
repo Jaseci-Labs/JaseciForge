@@ -1,13 +1,29 @@
- # Jaseci Forge
+# Jaseci Forge Documentation
 
-## Overview
-Jaseci Forge is a CLI tool designed to quickly set up JaseciStack Front-End projects. It creates a Next.js application pre-configured with TypeScript, Redux Toolkit, ShadCN UI, Tailwind CSS, and includes a TaskForge demo app to help you get started immediately.
+Welcome to Jaseci Forge - your AI-optimized architecture for building scalable and consistent Next.js/React applications with confidence.
 
-## Why Use Jaseci Forge?
-- **Quick Setup**: Instantly bootstrap a complete modern front-end stack
-- **Best Practices**: Pre-configured with industry standards and optimizations
-- **Production Ready**: Includes everything needed for development and deployment
-- **Demo Application**: Comes with TaskForge demo to demonstrate architecture and patterns
+## Why Choose Jaseci Forge?
+
+Jaseci Forge isn't just a template — it's a battle-tested, AI-optimized architecture for building scalable and consistent Next.js/React applications with confidence.
+
+### 1. Instant Setup
+Spin up a modern front-end stack in seconds — Next.js, TypeScript, Tailwind, Storybook, Tests, Auth — all pre-configured.
+
+### 2. LLM-Optimized Architecture
+Designed with well-defined layers and strict data flow, making it ideal for LLM-powered development and automation — AI understands the project as well as humans.
+
+### 3. Standardized Project Structure
+No more "every dev, their own folder structure." Forge enforces a consistent architecture across all projects, making onboarding and maintenance a breeze.
+
+### 4. CLI Tools to Move Fast
+Use the built-in CLI to generate modules, services, pages, components and more with a single command. [See how](module-creation.md).
+
+### 5. Test & Ship with Confidence
+Integrated with unit tests, Storybook for UI testing, and TypeScript — quality isn't optional, it's default.
+
+
+### 6. Production-Ready by Design
+Forge is not a starter kit — it's deployment-ready, following best practices used by top engineering teams.
 
 ## Pre-built Features
 
@@ -15,7 +31,6 @@ Jaseci Forge is a CLI tool designed to quickly set up JaseciStack Front-End proj
 - Complete authentication system with JWT
 - Role-based access control (RBAC)
 - Protected routes and API endpoints
-- Session management
 - [Authentication Documentation](docs/features/authentication.md)
 
 ### Testing Setup

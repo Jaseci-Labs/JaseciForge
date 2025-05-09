@@ -54,7 +54,7 @@ const sidebars: SidebarsConfig = {
         "guides/step2-module-creation",
         "guides/step3-node-customization",
         "guides/step4-ui-implementation",
-        "guides/step5-advanced-features",
+        "guides/step5-customize-template",
       ],
     },
     {

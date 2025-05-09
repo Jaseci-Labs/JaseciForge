@@ -19,12 +19,12 @@
     "storybook",
     "react-testing-library"
   ],
-  "homepage": "https://github.com/<your-username>/create-jaseci-app#readme",
+  "homepage": "https://github.com/jaseci/jaseci-forge/#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-username>/create-jaseci-app.git"
+    "url": "git+https://github.com/jaseci/jaseci-forge.git"
   },
-  "author": "Your Name <your-email@example.com>",
+  "author": "Musab M. <musab.secareer@jaseci.org>",
   "license": "MIT",
   "dependencies": {
     "commander": "^12.0.0",

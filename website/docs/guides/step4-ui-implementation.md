@@ -1,17 +1,17 @@
 # Step 4: UI Implementation
 
-Let's create the UI components for our Task Manager using the design system components.
+Let's create the UI components for our Task Manager using the design system components following Atomic Design principles.
 
 ## Create Task Components
 
-### Task Card Component
+### Task Card (Organism)
 
 ```typescript
-// modules/tasks/components/task-card.tsx
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+// ds/organisms/TaskCard.tsx
+import { Card, CardContent, CardHeader, CardFooter } from '@/ds/molecules/Card';
+import { Badge } from '@/ds/atoms/Badge';
+import { Button } from '@/ds/atoms/Button';
+import { Checkbox } from '@/ds/atoms/Checkbox';
 import { TaskNode } from '@/nodes/task-node';
 import { formatDate } from '@/utils/date';
 
@@ -67,14 +67,14 @@ export function TaskCard({ task, onToggleComplete, onDelete }: TaskCardProps) {
 }
 ```
 
-### Task List Component
+### Task List (Organism)
 
 ```typescript
-// modules/tasks/components/task-list.tsx
-import { useTaskManager } from '../hooks/use-task-manager';
-import { TaskCard } from './task-card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// ds/organisms/TaskList.tsx
+import { useTaskManager } from '@/modules/tasks/hooks/use-task-manager';
+import { TaskCard } from '@/ds/organisms/TaskCard';
+import { Skeleton } from '@/ds/atoms/Skeleton';
+import { Alert, AlertDescription } from '@/ds/molecules/Alert';
 
 export function TaskList() {
   const { tasks, isLoading, error, actions } = useTaskManager();
@@ -112,19 +112,19 @@ export function TaskList() {
 }
 ```
 
-### Task Form Component
+### Task Form (Organism)
 
 ```typescript
-// modules/tasks/components/task-form.tsx
+// ds/organisms/TaskForm.tsx
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select } from '@/components/ui/select';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { TaskFormData, taskSchema } from '../schemas/task-schema';
-import { useTaskManager } from '../hooks/use-task-manager';
+import { Button } from '@/ds/atoms/Button';
+import { Input } from '@/ds/atoms/Input';
+import { Textarea } from '@/ds/atoms/Textarea';
+import { Select } from '@/ds/atoms/Select';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/ds/molecules/Form';
+import { TaskFormData, taskSchema } from '@/modules/tasks/schemas/task-schema';
+import { useTaskManager } from '@/modules/tasks/hooks/use-task-manager';
 
 export function TaskForm() {
   const { actions } = useTaskManager();
@@ -200,12 +200,12 @@ export function TaskForm() {
 }
 ```
 
-## Create Task Stats Component
+### Task Stats (Organism)
 
 ```typescript
-// modules/tasks/components/task-stats.tsx
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTaskStats } from '../hooks/use-task-stats';
+// ds/organisms/TaskStats.tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/ds/molecules/Card';
+import { useTaskStats } from '@/modules/tasks/hooks/use-task-stats';
 
 export function TaskStats() {
   const stats = useTaskStats();
@@ -256,32 +256,33 @@ export function TaskStats() {
 
 ```typescript
 // modules/tasks/pages/task-manager-page.tsx
-import { DashboardTemplate } from '@/templates/dashboard-template';
-import { TaskList } from '../components/task-list';
-import { TaskForm } from '../components/task-form';
-import { TaskStats } from '../components/task-stats';
+import { TaskManagerTemplate } from '@/ds/templates/TaskManagerTemplate';
+import { TaskList } from '@/ds/organisms/TaskList';
+import { TaskForm } from '@/ds/organisms/TaskForm';
+import { Button } from '@/ds/atoms/Button';
 
 export default function TaskManagerPage() {
   return (
-    <DashboardTemplate>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Task Manager</h1>
+    <TaskManagerTemplate
+      description="Manage your tasks efficiently"
+      actions={
+        <Button variant="outline">
+          Export Tasks
+        </Button>
+      }
+    >
+      <div className="grid gap-6 md:grid-cols-2">
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
+          <TaskForm />
+        </div>
         
-        <TaskStats />
-        
-        <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-            <TaskForm />
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-            <TaskList />
-          </div>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Tasks</h2>
+          <TaskList />
         </div>
       </div>
-    </DashboardTemplate>
+    </TaskManagerTemplate>
   );
 }
 ```
@@ -297,8 +298,8 @@ export default function TaskManagerPage() {
 ## Next Steps
 
 In the next step, we'll:
-1. Add error boundaries
-2. Implement optimistic updates
-3. Add animations and transitions
+1. Create and customize templates
+2. Implement proper layout structure
+3. Add template-specific features
 
-[Continue to Step 5: Advanced Features →](./step5-advanced-features.md) 
+[Continue to Step 5: Template Customization →](./step5-advanced-features.md) 
