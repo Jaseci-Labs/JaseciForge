@@ -68,17 +68,36 @@ npx create-jaseci-app add-module products --apis="list,get,create,update,delete,
 ```
 
 ### `--auth <yes|no>`
-Control whether the page should be wrapped with `ProtectedRoute`. Defaults to `yes`.
+Control whether the page should be wrapped with `ProtectedRoute` and which API client to use. Defaults to `yes`.
+- When `yes` (default): Uses `private_api` and wraps the page with `ProtectedRoute`
+- When `no`: Uses `public_api` and creates a public route
 
 ```bash
-# Protected route (default)
+# Protected route with private_api (default)
 npx create-jaseci-app add-module products
 
-# Protected route (explicit)
+# Protected route with private_api (explicit)
 npx create-jaseci-app add-module products --auth=yes
 
-# Public route
+# Public route with public_api
 npx create-jaseci-app add-module public --auth=no
+```
+
+### `--api-base <base_path>`
+Specify the base path for API endpoints. Defaults to `/<module_name>s`.
+
+```bash
+# Custom API base path
+npx create-jaseci-app add-module post --api-base=/todos
+
+# Nested API path
+npx create-jaseci-app add-module users --api-base=/api/v1/users
+
+# Combined with other options
+npx create-jaseci-app add-module post \
+  --auth=no \
+  --api-base=/todos \
+  --node-type="id:number,title:string,completed:boolean"
 ```
 
 ## Generated Structure
@@ -216,14 +235,15 @@ npx create-jaseci-app add-module users \
   --auth=yes
 ```
 
-4. Create a complete module:
+4. Create a complete module with public API:
 ```bash
-npx create-jaseci-app add-module inventory \
-  --node=Product \
-  --path=dashboard/inventory \
-  --node-type="id:string,name:string,price:number,description:string?,status:active|inactive" \
+npx create-jaseci-app add-module post \
+  --node=Task \
+  --path=dashboard/tasks \
+  --node-type="id:number,title:string,completed:boolean,userId:number" \
   --apis="list,get,create,update,delete" \
-  --auth=yes
+  --auth=no \
+  --api-base=/todos
 ```
 
 ## Next Steps

@@ -4,8 +4,8 @@ export const APP_KEYS = {
 };
 
 export const APP_ROUTES = {
-  LOGIN: "/login",
-  REGISTER: "/register",
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
   HOME: "/",
   TASKS: "/tasks",
   PROFILE: "/profile",

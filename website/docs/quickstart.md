@@ -46,7 +46,7 @@ npx create-jaseci-app add-module users --path=dashboard/users
 
 ```bash
 # Create a node with basic fields
-npx create-jaseci-app add-module tasks --node-type="id:string,title:string,status:active|pending|completed"
+npx create-jaseci-app add-module post --node-type="id:string,title:string,status:active|pending|completed"
 
 # Create a node with optional fields
 npx create-jaseci-app add-module products --node-type="id:string,name:string,description:string?,price:number"

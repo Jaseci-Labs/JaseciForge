@@ -12,7 +12,8 @@ import type { TaskNode } from "@/nodes/task-node";
 export function useTaskManager() {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector((state) => state.tasks.tasks);
-
+  const loading = useAppSelector((state) => state.tasks.isLoading);
+  const error = useAppSelector((state) => state.tasks.error);
   // Task statistics
   const totalTasks = tasks.length;
   const activeTasks = tasks.filter((t) => !t.completed).length;
@@ -44,6 +45,8 @@ export function useTaskManager() {
 
   return {
     tasks,
+    isLoading: loading,
+    error,
     stats: {
       total: totalTasks,
       active: activeTasks,

@@ -14,7 +14,8 @@ interface UserState {
   isLoading: boolean;
   error: string | null;
   success: boolean; // New success flag
-  successMessage: string | null; // Optional success message
+  successMessage: string | null;
+  initialCheckComplete: boolean;
 }
 
 const initialState: UserState = {
@@ -23,6 +24,7 @@ const initialState: UserState = {
   error: null,
   success: false,
   successMessage: null,
+  initialCheckComplete: false,
 };
 
 export const userSlice = createSlice({
@@ -42,6 +44,9 @@ export const userSlice = createSlice({
     resetSuccess: (state) => {
       state.success = false;
       state.successMessage = null;
+    },
+    setInitialCheckComplete: (state) => {
+      state.initialCheckComplete = true;
     },
   },
   extraReducers: (builder) => {
@@ -144,6 +149,11 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setLoading, setError, resetSuccess } =
-  userSlice.actions;
+export const {
+  setUser,
+  setLoading,
+  setError,
+  resetSuccess,
+  setInitialCheckComplete,
+} = userSlice.actions;
 export default userSlice.reducer;

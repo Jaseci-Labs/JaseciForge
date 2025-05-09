@@ -2,18 +2,105 @@
 
 Let's create the UI components for our Task Manager using the design system components following Atomic Design principles.
 
+## Adding shadcn/ui Components
+
+Before implementing our components, we need to add the required shadcn/ui components to our design system. Follow these steps:
+
+1. Visit [shadcn/ui Components](https://ui.shadcn.com/docs/components)
+2. Find the component you need (e.g., Alert, Skeleton)
+3. Use the CLI to add the component:
+
+```bash
+# Add Alert component
+npx shadcn@latest add alert
+
+# Add Skeleton component
+npx shadcn@latest add skeleton
+```
+
+<!-- if this fail foolow their manual installation -->
+
+
+
+
+The CLI will:
+- Add the component to `ds/atoms/`
+- Add necessary dependencies
+- Update your `components.json`
+
+> If the CLI installation fails, you can manually install components:
+
+1. Create the component file in `ds/atoms/`:
+2. Add the component form their website manually
+3. make sure to change the `@/lib/utils` to `@/_core/utils` when adding manually.
+
+For example, to add the Alert component:
+1. Go to [Alert Documentation](https://ui.shadcn.com/docs/components/alert)
+2. Run `npx shadcn@latest add alert`
+3. Import and use in your components:
+```typescript
+import { Alert, AlertDescription } from "@/ds/atoms/alert";
+```
+
+## Utility Functions
+
+Before creating components, let's set up utility functions that can be used across the project.
+
+### Core Utilities
+
+For utilities that are used across multiple modules, add them to the core utils:
+
+```typescript
+// @/_core/utils/date.ts
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+export function isOverdue(date: string | Date): boolean {
+  return new Date(date) < new Date();
+}
+```
+
+### Module-Specific Utilities
+
+For utilities specific to a module, keep them in the module's utils folder:
+
+```typescript
+// modules/tasks/utils/index.ts
+import { TaskNode } from '@/nodes/task-node';
+
+export function getTaskStatus(task: TaskNode): 'completed' | 'pending' | 'overdue' {
+  if (task.completed) return 'completed';
+  if (task.dueDate && new Date(task.dueDate) < new Date()) return 'overdue';
+  return 'pending';
+}
+
+export function getPriorityColor(priority: string): string {
+  switch (priority) {
+    case 'high': return 'text-red-500';
+    case 'medium': return 'text-yellow-500';
+    case 'low': return 'text-green-500';
+    default: return 'text-gray-500';
+  }
+}
+```
+
 ## Create Task Components
 
 ### Task Card (Organism)
 
 ```typescript
 // ds/organisms/TaskCard.tsx
-import { Card, CardContent, CardHeader, CardFooter } from '@/ds/molecules/Card';
-import { Badge } from '@/ds/atoms/Badge';
-import { Button } from '@/ds/atoms/Button';
-import { Checkbox } from '@/ds/atoms/Checkbox';
-import { TaskNode } from '@/nodes/task-node';
-import { formatDate } from '@/utils/date';
+import { Card, CardContent, CardHeader, CardFooter } from "@/ds/atoms/card";
+import { Badge } from "@/ds/atoms/badge";
+import { Button } from "@/ds/atoms/button";
+import { Checkbox } from "@/ds/atoms/checkbox";
+import { TaskNode } from "@/nodes/task-node";
+import { formatDate } from '@/_core/utils/date';
 
 interface TaskCardProps {
   task: TaskNode;
@@ -71,10 +158,10 @@ export function TaskCard({ task, onToggleComplete, onDelete }: TaskCardProps) {
 
 ```typescript
 // ds/organisms/TaskList.tsx
-import { useTaskManager } from '@/modules/tasks/hooks/use-task-manager';
+import { useTaskManager } from "@/modules/tasks/hooks/use-task-manager";
 import { TaskCard } from '@/ds/organisms/TaskCard';
-import { Skeleton } from '@/ds/atoms/Skeleton';
-import { Alert, AlertDescription } from '@/ds/molecules/Alert';
+import { Skeleton } from '@/ds/atoms/skeleton';
+import { Alert, AlertDescription } from '@/ds/atoms/alert';
 
 export function TaskList() {
   const { tasks, isLoading, error, actions } = useTaskManager();

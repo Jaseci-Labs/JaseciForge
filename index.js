@@ -261,7 +261,11 @@ program
   )
   .option(
     "--auth <yes|no>",
-    "Whether to wrap the page with ProtectedRoute (default: yes)"
+    "Whether to wrap the page with ProtectedRoute and use private_api (default: yes)"
+  )
+  .option(
+    "--api-base <base_path>",
+    "Base path for API endpoints (e.g., '/todos' for JSONPlaceholder)"
   )
   .action(async (moduleName, options) => {
     const targetDir = process.cwd();
@@ -269,6 +273,7 @@ program
     const nodeName = options.node || moduleName;
     const appDir = path.join(targetDir, "app");
     const requiresAuth = options.auth !== "no"; // default to true if not explicitly set to 'no'
+    const apiBase = options.apiBase || `/${nodeName.toLowerCase()}s`;
 
     // Parse API endpoints
     const defaultApis = ["getAll", "getById", "create", "update", "delete"];
@@ -392,36 +397,39 @@ program
       // Generate service methods based on API endpoints
       const serviceMethods = customApis
         .map((api) => {
+          const apiClient = requiresAuth ? "private_api" : "public_api";
+          const basePath = apiBase.startsWith("/") ? apiBase : `/${apiBase}`;
+
           switch (api.toLowerCase()) {
             case "getall":
             case "list":
               return `  static async getAll(): Promise<${nodeName}Node[]> {
-    const response = await private_api.post('/walker/${nodeName.toLowerCase()}s');
+    const response = await ${apiClient}.get('${basePath}');
     return response.data;
   }`;
             case "getbyid":
             case "get":
               return `  static async getById(id: string): Promise<${nodeName}Node> {
-    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`);
+    const response = await ${apiClient}.get(\`${basePath}/\${id}\`);
     return response.data;
   }`;
             case "create":
               return `  static async create(data: Omit<${nodeName}Node, 'id'>): Promise<${nodeName}Node> {
-    const response = await private_api.post('/walker/${nodeName.toLowerCase()}s', data);
+    const response = await ${apiClient}.post('${basePath}', data);
     return response.data;
   }`;
             case "update":
               return `  static async update(id: string, data: Partial<${nodeName}Node>): Promise<${nodeName}Node> {
-    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`, data);
+    const response = await ${apiClient}.put(\`${basePath}/\${id}\`, data);
     return response.data;
   }`;
             case "delete":
               return `  static async delete(id: string): Promise<void> {
-    await private_api.post(\`/walker/${nodeName.toLowerCase()}s/\${id}\`);
+    await ${apiClient}.delete(\`${basePath}/\${id}\`);
   }`;
             default:
               return `  static async ${api}(data?: any): Promise<any> {
-    const response = await private_api.post(\`/walker/${nodeName.toLowerCase()}s\${data ? \`/\${data}\` : ''}\`);
+    const response = await ${apiClient}.post(\`${basePath}\${data ? \`/\${data}\` : ''}\`);
     return response.data;
   }`;
           }
@@ -434,9 +442,11 @@ program
 
         "actions/index.ts": `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Service } from '../services';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example action\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Service.getAll();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`,
 
-        "hooks/index.ts": `import { useAppDispatch, useAppSelector } from '@/store/hooks';\nimport { fetch${nodeName}s } from './actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
+        "hooks/index.ts": `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
 
-        "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { private_api } from '@/core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
+        "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { ${
+          requiresAuth ? "private" : "public"
+        }_api } from '@/_core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
 
         "schemas/index.ts": `import { z } from 'zod';\n\nexport const ${nodeName}Schema = z.object({\n${generateZodSchema(
           nodeType
@@ -469,7 +479,7 @@ program
         // Add reducer to store configuration
         storeContent = storeContent.replace(
           /reducer: {([^}]*)}/,
-          `reducer: {$1\n    ${nodeName.toLowerCase()}: ${nodeName.toLowerCase()}Reducer,`
+          `reducer: {$1\n    ${nodeName.toLowerCase()}: ${nodeName.toLowerCase()}Reducer}`
         );
 
         await fs.writeFile(storePath, storeContent);
@@ -480,9 +490,9 @@ program
 
 import { ${
         requiresAuth ? "ProtectedRoute" : ""
-      } from "@/ds/wrappers/prtoected-auth";
-import { Card } from '@/ds/molecules/Card';
-import { Button } from '@/ds/atoms/Button';
+      } } from "@/ds/wrappers/prtoected-auth";
+import { Card } from '@/ds/atoms/card';
+import { Button } from '@/ds/atoms/button';
 import { use${nodeName}s } from '../hooks';
 
 /**
@@ -515,30 +525,46 @@ export default function ${nodeName}Page() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const pageContent = (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">${nodeName}s</h1>
-        <Button onClick={refresh}>Refresh</Button>
-      </div>
-      <div className="grid gap-4">
-        {items.map((item) => (
-          <Card key={item.id}>
-            <h2 className="text-xl font-semibold">{item.name}</h2>
-            <p className="text-gray-600">{item.description}</p>
-            <div className="mt-2 text-sm text-gray-500">
-              Status: {item.status}
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-
   return ${
     requiresAuth
-      ? "<ProtectedRoute>{pageContent}</ProtectedRoute>"
-      : "{pageContent}"
+      ? `<ProtectedRoute>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">${nodeName}s</h1>
+            <Button onClick={refresh}>Refresh</Button>
+          </div>
+          <div className="grid gap-4">
+            {items.map((item) => (
+              <Card key={item.id}>
+                <h2 className="text-xl font-semibold">{item.name}</h2>
+                <p className="text-gray-600">{item.description}</p>
+                <div className="mt-2 text-sm text-gray-500">
+                  Status: {item.status}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </ProtectedRoute>`
+      : `<>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">${nodeName}s</h1>
+            <Button onClick={refresh}>Refresh</Button>
+          </div>
+          <div className="grid gap-4">
+            {items.map((item) => (
+              <Card key={item.id}>
+                <h2 className="text-xl font-semibold">{item.name}</h2>
+                <p className="text-gray-600">{item.description}</p>
+                <div className="mt-2 text-sm text-gray-500">
+                  Status: {item.status}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </>`
   };
 }`;
       await fs.writeFile(
@@ -552,7 +578,7 @@ export default function ${nodeName}Page() {
       await fs.ensureDir(routeDir);
 
       // Create page.tsx for the route
-      const routePageContent = `import { ${nodeName}Page } from '@/modules/${moduleName}/pages/${nodeName}Page';\n\nexport default function Page() {\n  return <${nodeName}Page />;\n}\n`;
+      const routePageContent = `import ${nodeName}Page  from '@/modules/${moduleName}/pages/${nodeName}Page';\n\nexport default function Page() {\n  return <${nodeName}Page />;\n}\n`;
       await fs.writeFile(path.join(routeDir, "page.tsx"), routePageContent);
 
       // Create layout.tsx for the route

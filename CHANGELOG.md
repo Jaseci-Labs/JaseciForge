@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Add email authentication and SSO support (Milestone 2)
 - Add WebSocket support for real-time features (Milestone 4)
 - Final polish and npm release (Milestone 5)
+- test for everything
+
 
 ## [0.1.19] - 2025-05-08
 ### Added

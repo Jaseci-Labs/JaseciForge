@@ -1,6 +1,6 @@
 # Step 1: Installation and Setup
 
-Let's build a Task Manager application using Jaseci Forge. We'll use the Jaseci API for our data.
+Let's build a Task Manager application using Jaseci Forge. We'll use JSONPlaceholder API for our data.
 
 ## Installation
 
@@ -37,24 +37,37 @@ task-manager/
 
 ## Environment Setup
 
-1. Create `.env.local`:
+1. Rename `.env.example` to `.env.local` on the root:
 ```env
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=https://jsonplaceholder.typicode.com
 
-# Feature Flags
-NEXT_PUBLIC_ENABLE_ANALYTICS=false
+# Other environment variables
 ```
 
-The application uses two API clients:
-- `public_api`: For public endpoints (authentication, registration)
-- `private_api`: For protected endpoints (requires authentication)
+The application uses JSONPlaceholder API for our task management:
+- Base URL: `https://jsonplaceholder.typicode.com`
+- Endpoints:
+  - GET `/todos` - List all tasks
+  - GET `/todos/:id` - Get a specific task
+  - POST `/todos` - Create a new task
+  - PUT `/todos/:id` - Update a task
+  - DELETE `/todos/:id` - Delete a task
+
+Note: JSONPlaceholder is a fake REST API for testing and prototyping. It doesn't actually persist data, but it's perfect for our guide.
 
 ## Verify Installation
 
 1. Visit [http://localhost:3000](http://localhost:3000)
 2. You should see the default landing page
 3. Check the console for any errors
+4. Test the API connection:
+```typescript
+// You can test the API in your browser console
+fetch('https://jsonplaceholder.typicode.com/todos/1')
+  .then(response => response.json())
+  .then(json => console.log(json))
+```
 
 ## Next Steps
 

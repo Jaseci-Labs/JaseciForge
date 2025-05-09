@@ -29,6 +29,7 @@ private_api.interceptors.request.use(
       const token_obj = localStorage.getItem(APP_KEYS.TOKEN);
       const token = token_obj ? JSON.parse(token_obj)?.value : null;
       if (token) {
+        // TOOD:
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
