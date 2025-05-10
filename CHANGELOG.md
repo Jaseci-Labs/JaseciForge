@@ -4,15 +4,33 @@ All notable changes to `create-jaseci-app` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20] - 2025-05-09
+### Added
+- Comprehensive tutorial documentation:
+  - Step-by-step guide for building a complete module
+  - Detailed explanation of each layer (Service, Data, Presentation)
+  - Best practices for module development
+  - Template customization guide
+  - UI implementation using Atomic Design
+- Enhanced module creation documentation:
+  - Clear examples of module parameters
+  - Detailed explanation of generated structure
+  - Best practices for module customization
+- Added summary guide:
+  - Complete overview of the development process
+  - Best practices for each layer
+  - Performance optimization tips
+  - Next steps for further development
 
+### Changed
+- Updated documentation structure for better clarity
+- Improved examples in module creation guide
+- Enhanced template documentation with practical examples
 
-### Planned
-- handle module name with create module tool, and modiuels insie only if we are in app route
-- Add email authentication and SSO support (Milestone 2)
-- Add WebSocket support for real-time features (Milestone 4)
-- Final polish and npm release (Milestone 5)
-- test for everything
-
+### Fixed
+- Fixed documentation inconsistencies
+- Updated outdated examples
+- Corrected module creation parameters documentation
 
 ## [0.1.19] - 2025-05-08
 ### Added

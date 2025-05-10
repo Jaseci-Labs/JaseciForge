@@ -52,9 +52,14 @@ const sidebars: SidebarsConfig = {
       items: [
         "guides/step1-installation",
         "guides/step2-module-creation",
-        "guides/step3-node-customization",
-        "guides/step4-ui-implementation",
-        "guides/step5-customize-template",
+        "guides/step3-customize-layers",
+        "guides/step3a-node-customization",
+        "guides/step3b-service-layer",
+        "guides/step3c-actions-and-interfaces",
+        "guides/step3d-store-and-reducers",
+        "guides/step3e-custom-hooks",
+        "guides/step3f-ui-implementation",
+        "guides/summary",
       ],
     },
     {

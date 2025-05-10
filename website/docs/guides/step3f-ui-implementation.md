@@ -1,4 +1,4 @@
-# Step 4: UI Implementation
+# Lesson 3.7: UI Implementation
 
 Let's create the UI components for our Task Manager using the design system components following Atomic Design principles.
 
@@ -94,57 +94,49 @@ export function getPriorityColor(priority: string): string {
 ### Task Card (Organism)
 
 ```typescript
-// ds/organisms/TaskCard.tsx
+// ds/organisms/post-card.tsx
 import { Card, CardContent, CardHeader, CardFooter } from "@/ds/atoms/card";
 import { Badge } from "@/ds/atoms/badge";
 import { Button } from "@/ds/atoms/button";
 import { Checkbox } from "@/ds/atoms/checkbox";
-import { TaskNode } from "@/nodes/task-node";
-import { formatDate } from '@/_core/utils/date';
+import { formatDate } from "@/_core/utils/date";
+import { PostNode } from "@/nodes/post-node";
 
-interface TaskCardProps {
-  task: TaskNode;
+interface PostCardProps {
+  post: PostNode;
   onToggleComplete: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
-export function TaskCard({ task, onToggleComplete, onDelete }: TaskCardProps) {
+export function PostCard({ post, onToggleComplete, onDelete }: PostCardProps) {
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Checkbox
-            checked={task.completed}
-            onCheckedChange={() => onToggleComplete(task.id)}
+            checked={post.completed}
+            onCheckedChange={() => onToggleComplete(post.id)}
           />
-          <h3 className={`text-lg font-semibold ${task.completed ? 'line-through' : ''}`}>
-            {task.title}
+          <h3
+            className={`text-lg font-semibold ${
+              post.completed ? "line-through" : ""
+            }`}
+          >
+            {post.title}
           </h3>
         </div>
-        <Badge variant={task.priority === 'high' ? 'destructive' : 'default'}>
-          {task.priority}
+        <Badge variant={post.completed === true ? "destructive" : "default"}>
+          {post.completed ? "Completed" : "Pending"}
         </Badge>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-600">{task.description}</p>
-        {task.dueDate && (
-          <p className="text-sm text-gray-500 mt-2">
-            Due: {formatDate(task.dueDate)}
-          </p>
-        )}
-        <div className="flex gap-2 mt-2">
-          {task.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        <p className="text-sm text-gray-600">{post.description}</p>
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDelete(task.id)}
+          onClick={() => onDelete(post.id)}
         >
           Delete
         </Button>
@@ -157,14 +149,27 @@ export function TaskCard({ task, onToggleComplete, onDelete }: TaskCardProps) {
 ### Task List (Organism)
 
 ```typescript
-// ds/organisms/TaskList.tsx
-import { useTaskManager } from "@/modules/tasks/hooks/use-task-manager";
-import { TaskCard } from '@/ds/organisms/TaskCard';
-import { Skeleton } from '@/ds/atoms/skeleton';
-import { Alert, AlertDescription } from '@/ds/atoms/alert';
+// ds/organisms/post-list.tsx
+"use client";
+import { PostCard } from "@/ds/organisms/post-card";
+import { Skeleton } from "@/ds/atoms/skeleton";
+import { usePosts } from "@/modules/post";
+import { Alert, AlertDescription } from "../atoms/alert";
+import { useEffect, useState } from "react";
 
-export function TaskList() {
-  const { tasks, isLoading, error, actions } = useTaskManager();
+export function PostList() {
+  const { posts, isLoading, error, actions } = usePosts();
+  const [formattedPosts, setFormattedPosts] = useState(posts);
+
+  useEffect(() => {
+    setFormattedPosts(
+      posts.map((post) => ({
+        ...post,
+        createdAt: new Date(post.createdAt).toLocaleDateString(),
+        updatedAt: new Date(post.updatedAt).toLocaleDateString(),
+      }))
+    );
+  }, [posts]);
 
   if (isLoading) {
     return (
@@ -186,12 +191,12 @@ export function TaskList() {
 
   return (
     <div className="space-y-4">
-      {tasks.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
+      {formattedPosts.map((post) => (
+        <PostCard
+          key={post.id}
+          post={post}
           onToggleComplete={actions.toggleComplete}
-          onDelete={actions.deleteTask}
+          onDelete={actions.deletePost}
         />
       ))}
     </div>
@@ -202,31 +207,39 @@ export function TaskList() {
 ### Task Form (Organism)
 
 ```typescript
-// ds/organisms/TaskForm.tsx
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/ds/atoms/Button';
-import { Input } from '@/ds/atoms/Input';
-import { Textarea } from '@/ds/atoms/Textarea';
-import { Select } from '@/ds/atoms/Select';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/ds/molecules/Form';
-import { TaskFormData, taskSchema } from '@/modules/tasks/schemas/task-schema';
-import { useTaskManager } from '@/modules/tasks/hooks/use-task-manager';
+// ds/organisms/post-form.tsx
+"use client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { usePosts } from "@/modules/post";
+import { PostFormData, postSchema } from "@/modules/post/schemas";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../atoms/form";
+import { Input } from "../atoms/input";
+import { Textarea } from "../atoms/textarea";
+import { Select } from "../atoms/select";
+import { Button } from "../atoms/button";
 
-export function TaskForm() {
-  const { actions } = useTaskManager();
-  const form = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
+export function PostForm() {
+  const { actions } = usePosts();
+  const form = useForm<PostFormData>({
+    resolver: zodResolver(postSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      priority: 'medium',
+      title: "",
+      description: "",
+      priority: "medium",
       tags: [],
     },
   });
 
-  const onSubmit = async (data: TaskFormData) => {
-    await actions.addTask(data);
+  const onSubmit = async (data: PostFormData) => {
+    await actions.addPost(data);
     form.reset();
   };
 
@@ -267,10 +280,7 @@ export function TaskForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Priority</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
@@ -280,96 +290,100 @@ export function TaskForm() {
           )}
         />
 
-        <Button type="submit">Add Task</Button>
+        <Button type="submit">Add Post</Button>
       </form>
     </Form>
   );
 }
 ```
 
-### Task Stats (Organism)
+## Using and Creating Templates
+
+Templates provide a consistent layout structure for your pages. You can either use existing templates from our design system or create custom ones.
+
+### Using Existing Templates
+
+Our design system comes with several pre-built templates that you can usef rom `ds/templates `. For our tutorial, let's build a custom template `PostManagerTemplate`
+
+### Creating Custom Templates
+
+You can create custom templates by extending the base template structure. Here's an example of a custom post manager template:
 
 ```typescript
-// ds/organisms/TaskStats.tsx
-import { Card, CardContent, CardHeader, CardTitle } from '@/ds/molecules/Card';
-import { useTaskStats } from '@/modules/tasks/hooks/use-task-stats';
+// ds/templates/post-manager-template.tsx
+import React, { ReactNode } from "react";
 
-export function TaskStats() {
-  const stats = useTaskStats();
+interface PostManagerTemplateProps {
+  children: ReactNode;
+  description: string;
+  actions?: ReactNode;
+}
 
+function PostManagerTemplate({
+  children,
+  description,
+  actions,
+}: PostManagerTemplateProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Tasks</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">{stats.total}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Completed</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">{stats.completed}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">{stats.pending}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>High Priority</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">{stats.highPriority}</p>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex flex-col">
+      <header className="sticky top-0 z-10 bg-background border-b p-4">
+        <div className="flex justify-between items-center">
+          <p className="text-muted-foreground">{description}</p>
+          {actions}
+        </div>
+      </header>
+      <main className="flex-1 p-6">{children}</main>
     </div>
   );
 }
+
+export default PostManagerTemplate;
 ```
+
+Key features of this template:
+- Sticky header with description and optional actions
+- Flexible main content area
+- Responsive layout
+- Consistent spacing and styling
+
+You can customize this template by:
+1. Adding more sections (sidebar, footer, etc.)
+2. Modifying the styling
+3. Including additional props for more flexibility
+4. Adding template-specific features
+
 
 ## Update Task Manager Page
 
-```typescript
-// modules/tasks/pages/task-manager-page.tsx
-import { TaskManagerTemplate } from '@/ds/templates/TaskManagerTemplate';
-import { TaskList } from '@/ds/organisms/TaskList';
-import { TaskForm } from '@/ds/organisms/TaskForm';
-import { Button } from '@/ds/atoms/Button';
+Now we have created the template and necessary organisms, its time to plug them in to template and build our module.
 
-export default function TaskManagerPage() {
+```typescript
+// modules/post/pages/index.tsx
+i// modules/post/pages/index.tsx
+
+import { Button } from "@/ds/atoms/button";
+import { PostForm } from "@/ds/organisms/post-form";
+import { PostList } from "@/ds/organisms/post-list";
+import PostManagerTemplate from "@/ds/templates/post-manager-template";
+
+export default function PostManagerPage() {
   return (
-    <TaskManagerTemplate
+    <PostManagerTemplate
       description="Manage your tasks efficiently"
-      actions={
-        <Button variant="outline">
-          Export Tasks
-        </Button>
-      }
+      actions={<Button variant="outline">Export Tasks</Button>}
     >
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-          <TaskForm />
+          <PostForm />
         </div>
-        
+
         <div>
           <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-          <TaskList />
+          <PostList />
         </div>
       </div>
-    </TaskManagerTemplate>
+    </PostManagerTemplate>
   );
 }
 ```
@@ -389,4 +403,4 @@ In the next step, we'll:
 2. Implement proper layout structure
 3. Add template-specific features
 
-[Continue to Step 5: Template Customization →](./step5-advanced-features.md) 
+[Continue to Summary and Best practices →](./summary.md) 

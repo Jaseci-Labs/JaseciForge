@@ -10,6 +10,38 @@ npx create-jaseci-app add-module <module_name>
 
 This creates a new module with the default structure and a route at `/<module_name>`.
 
+## Command Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `module_name` | string | Yes | - | The name of the module to create. This will be used for the module directory, route path, and node name unless overridden by other parameters. |
+| `--node` | string | No | - | Custom node name for the module. This affects the generated TypeScript interface name and related files. Useful when you want a different name for your node than the module name. |
+| `--path` | string | No | - | Custom route path for the module. Supports Next.js route groups (using parentheses) and nested routes. Example: `dashboard/products` or `(admin)/users`. |
+| `--node-type` | string | No | - | Defines the structure of your node with field definitions. Supports basic types (string, number, boolean), optional fields (using ?), and union types (using \|). Example: `id:string,name:string,price:number,status:active\|inactive\|pending`. |
+| `--apis` | string | No | - | Comma-separated list of API endpoints to generate. Available options: `list`, `get`, `create`, `update`, `delete`, `search`, `filter`. You can specify any combination of these endpoints. |
+| `--auth` | `yes\|no` | No | `yes` | Controls authentication and API client type. When `yes` (default), uses `private_api` and wraps the page with `ProtectedRoute`. When `no`, uses `public_api` and creates a public route. |
+| `--api-base` | string | No | - | Base path for API endpoints. This is the prefix used for all API calls. Example: `/api/v1/users` or `/todos`. |
+
+### Parameter Details
+
+- **module_name**: The only required parameter. Determines the base name for the module, routes, and files. This name will be used throughout the generated code unless overridden by other parameters.
+
+- **--node**: Optional parameter that lets you specify a different name for the node interface and related files. This is useful when you want your TypeScript interface to have a different name than your module. For example, if your module is named "inventory" but you want the node to be called "Product".
+
+- **--path**: Optional parameter for custom routing paths. Supports Next.js route groups (using parentheses) and nested routes. This gives you flexibility in organizing your application's URL structure. For example, you can create admin-only routes or group related features together.
+
+- **--node-type**: Optional parameter for defining the structure of your node. This is where you specify the fields and their types that your node will have. Supports:
+  - Basic types: `string`, `number`, `boolean`
+  - Optional fields: Add `?` after the type
+  - Union types: Use `|` to specify multiple possible values
+  - Date fields: Use `date` type for timestamps
+
+- **--apis**: Optional parameter to specify which API endpoints to generate. You can choose from standard CRUD operations or add custom endpoints. This gives you control over which API methods are available in your module.
+
+- **--auth**: Optional parameter that controls whether the module should be protected and which API client to use. This is important for security and access control in your application.
+
+- **--api-base**: Optional parameter to customize the base path for API endpoints. This is useful when you need to match an existing API structure or when working with third-party APIs.
+
 ## Command Options
 
 ### `--node <node_name>`

@@ -403,50 +403,57 @@ program
           switch (api.toLowerCase()) {
             case "getall":
             case "list":
-              return `  static async getAll(): Promise<${nodeName}Node[]> {
+              return `  // Get all ${nodeName.toLowerCase()}s
+  get${nodeName}s: async () => {
     const response = await ${apiClient}.get('${basePath}');
     return response.data;
   }`;
             case "getbyid":
             case "get":
-              return `  static async getById(id: string): Promise<${nodeName}Node> {
+              return `  // Get a specific ${nodeName.toLowerCase()}
+  get${nodeName}: async (id: number) => {
     const response = await ${apiClient}.get(\`${basePath}/\${id}\`);
     return response.data;
   }`;
             case "create":
-              return `  static async create(data: Omit<${nodeName}Node, 'id'>): Promise<${nodeName}Node> {
+              return `  // Create a new ${nodeName.toLowerCase()}
+  create${nodeName}: async (data: Omit<${nodeName}Node, 'id'>) => {
     const response = await ${apiClient}.post('${basePath}', data);
     return response.data;
   }`;
             case "update":
-              return `  static async update(id: string, data: Partial<${nodeName}Node>): Promise<${nodeName}Node> {
+              return `  // Update an existing ${nodeName.toLowerCase()}
+  update${nodeName}: async (id: number, data: Partial<${nodeName}Node>) => {
     const response = await ${apiClient}.put(\`${basePath}/\${id}\`, data);
     return response.data;
   }`;
             case "delete":
-              return `  static async delete(id: string): Promise<void> {
-    await ${apiClient}.delete(\`${basePath}/\${id}\`);
+              return `  // Delete a ${nodeName.toLowerCase()}
+  delete${nodeName}: async (id: number) => {
+    const response = await ${apiClient}.delete(\`${basePath}/\${id}\`);
+    return response.data;
   }`;
             default:
-              return `  static async ${api}(data?: any): Promise<any> {
+              return `  // Custom ${api} operation
+  ${api}: async (data?: any) => {
     const response = await ${apiClient}.post(\`${basePath}\${data ? \`/\${data}\` : ''}\`);
     return response.data;
   }`;
           }
         })
-        .join("\n\n");
+        .join(",\n\n");
 
       // Create module files
       const files = {
         "index.ts": `export * from './actions';\nexport * from './hooks';\nexport * from './services';\n`,
 
-        "actions/index.ts": `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Service } from '../services';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example action\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Service.getAll();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`,
+        "actions/index.ts": `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Api } from '../services';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example action\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Api.get${nodeName}s();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`,
 
         "hooks/index.ts": `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`,
 
         "services/index.ts": `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { ${
           requiresAuth ? "private" : "public"
-        }_api } from '@/_core/api-client';\n\nexport class ${nodeName}Service {\n${serviceMethods}\n}\n`,
+        }_api } from '@/_core/api-client';\n\nexport const ${nodeName}Api = {\n${serviceMethods}\n};\n`,
 
         "schemas/index.ts": `import { z } from 'zod';\n\nexport const ${nodeName}Schema = z.object({\n${generateZodSchema(
           nodeType

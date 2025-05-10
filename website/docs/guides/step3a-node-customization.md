@@ -1,4 +1,4 @@
-# Step 3b: Node Customization
+# Lesson 3.1: Node Customization
 
 Let's enhance our Task node with additional fields and types for better functionality.
 
@@ -106,4 +106,4 @@ In the next step, we'll:
 2. Create data management hooks
 3. Connect everything together
 
-[Continue to Step 3c: Data Layer Integration →](./step3c-data-layer.md) 
+[Continue to Lesson 3.2: Enhancing Service Layer →](./step3b-service-layer.md) 

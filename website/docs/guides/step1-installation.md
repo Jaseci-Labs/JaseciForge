@@ -1,21 +1,16 @@
-# Step 1: Installation and Setup
+# Lesson 1: Installation and Setup
 
-Let's build a Task Manager application using Jaseci Forge. We'll use JSONPlaceholder API for our data.
+Let's build a Task Manager application using Jaseci Forge. We'll use [JSONPlaceholder API](https://jsonplaceholder.typicode.com/) for our data.
 
 ## Installation
 
-1. Create a new project:
+1. Create a new project: This will initiate our project with required dependencies installed
 ```bash
 npx create-jaseci-app task-manager
 cd task-manager
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
+2. Start the development server:
 ```bash
 npm run dev
 ```
@@ -61,19 +56,10 @@ Note: JSONPlaceholder is a fake REST API for testing and prototyping. It doesn't
 1. Visit [http://localhost:3000](http://localhost:3000)
 2. You should see the default landing page
 3. Check the console for any errors
-4. Test the API connection:
-```typescript
-// You can test the API in your browser console
-fetch('https://jsonplaceholder.typicode.com/todos/1')
-  .then(response => response.json())
-  .then(json => console.log(json))
-```
 
 ## Next Steps
 
 In the next step, we'll:
-1. Create our tasks module
-2. Set up the node definition
-3. Configure the API service
+1. Create our posts module using `add-module` utility
 
-[Continue to Step 2: Module Creation →](./step2-module-creation.md) 
+[Continue to Lesson 2: Module Creation →](./step2-module-creation.md) 

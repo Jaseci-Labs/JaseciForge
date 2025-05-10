@@ -1,64 +1,129 @@
-# Step 3c: Data Layer Integration
+# Lesson 3.4: Data Layer Integration
 
 Let's set up the data layer to manage task state and connect our service layer with the UI.
 
 ## Redux Store Setup
 
 ```typescript
-// store/taskSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TaskNode } from '@/nodes/task-node';
+// store/postSlice.ts
+import { PostNode } from "@/nodes/post-node";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createPost,
+  deletePostAction,
+  fetchPosts,
+  updatePostAction,
+} from "../modules/post/actions";
 
-interface TaskState {
-  items: TaskNode[];
-  loading: boolean;
+interface PostState {
+  items: PostNode[];
+  isLoading: boolean;
   error: string | null;
+  success: boolean;
+  successMessage: string | null;
 }
 
-const initialState: TaskState = {
+const initialState: PostState = {
   items: [],
-  loading: false,
+  isLoading: false,
   error: null,
+  success: false,
+  successMessage: null,
 };
 
-const taskSlice = createSlice({
-  name: 'tasks',
+export const postSlice = createSlice({
+  name: "post",
   initialState,
   reducers: {
-    setItems: (state, action: PayloadAction<TaskNode[]>) => {
+    setItems: (state, action: PayloadAction<PostNode[]>) => {
       state.items = action.payload;
     },
-    addItem: (state, action: PayloadAction<TaskNode>) => {
-      state.items.push(action.payload);
-    },
-    updateItem: (state, action: PayloadAction<TaskNode>) => {
-      const index = state.items.findIndex(item => item.id === action.payload.id);
-      if (index !== -1) {
-        state.items[index] = action.payload;
-      }
-    },
-    removeItem: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
-    },
     setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+      state.isLoading = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
+      state.success = false;
     },
+    resetSuccess: (state) => {
+      state.success = false;
+      state.successMessage = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchPosts.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(fetchPosts.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.items = action.payload;
+      state.success = true;
+      state.successMessage = "Posts fetched successfully";
+    });
+    builder.addCase(fetchPosts.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+      state.success = false;
+    });
+    // add case for create post
+    builder.addCase(createPost.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(createPost.fulfilled, (state, action) => {
+      state.items.push(action.payload);
+      state.success = true;
+      state.successMessage = "Post created successfully";
+    });
+    builder.addCase(createPost.rejected, (state, action) => {
+      state.error = action.payload as string;
+      state.success = false;
+    });
+    // add case for update post
+    builder.addCase(updatePostAction.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(updatePostAction.fulfilled, (state, action) => {
+      state.items = state.items.map((item) =>
+        item.id === action.payload.id ? action.payload : item
+      );
+      state.success = true;
+      state.successMessage = "Post updated successfully";
+    });
+    builder.addCase(updatePostAction.rejected, (state, action) => {
+      state.error = action.payload as string;
+      state.success = false;
+    });
+    // add case for delete post
+    builder.addCase(deletePostAction.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.success = false;
+      state.successMessage = null;
+    });
+    builder.addCase(deletePostAction.fulfilled, (state, action) => {
+      state.items = state.items.filter((item) => item.id !== action.payload);
+      state.success = true;
+      state.successMessage = "Post deleted successfully";
+    });
+    builder.addCase(deletePostAction.rejected, (state, action) => {
+      state.error = action.payload as string;
+      state.success = false;
+    });
   },
 });
 
-export const {
-  setItems,
-  addItem,
-  updateItem,
-  removeItem,
-  setLoading,
-  setError,
-} = taskSlice.actions;
-
-export default taskSlice.reducer;
+export const { setItems, setLoading, setError, resetSuccess } =
+  postSlice.actions;
+export default postSlice.reducer;
 ```
 
 ## Data Management Hook
@@ -207,4 +272,4 @@ Now that we have our data layer set up, we can move on to:
 2. Implementing the task list
 3. Adding task forms
 
-[Continue to Step 4: UI Implementation →](./step4-ui-implementation.md) 
+[Continue to Lesson 3.5: Store and Reducers Implementation →](./step3d-store-and-reducers.md) 

@@ -103,7 +103,6 @@ If you encounter any issues:
 
 After installation:
 
-1. Read the [Quick Start Guide](../quickstart) to learn about basic usage
-2. Check out the [Architecture Overview](../architecture) to understand the project structure
-3. Review the [Best Practices](../guides/best-practices) for development guidelines
-4. Explore the [Module Creation Guide](../guides/module-creation) to start building your application
+1. Read the [Quick Start Guide](./quickstart) to learn about basic usage
+2. Check out the [Architecture Overview](./architecture) to understand the project structure
+3. Explore the [Module Creation Guide](./module-creation) to start building your application

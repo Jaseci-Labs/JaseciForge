@@ -1,6 +1,27 @@
-# Quick Start Guide
+# Quickstart Guide
 
-This guide will help you get started with Jaseci Forge quickly. We'll cover the basic commands and common workflows.
+Welcome to Jaseci Forge! This guide will help you get started quickly.
+
+## Getting Started
+
+1. [Installation and Setup](./guides/step1-installation.md)
+2. [Module Creation](./guides/step2-module-creation.md)
+3. [Layer Customization](./guides/step3-customize-layers.md)
+
+## Architecture Overview
+
+Learn about our [Architecture](./architecture.md) and how different layers work together.
+
+## Best Practices
+
+Check out our [Best Practices](./guides/summary.md#best-practices) guide for tips on building robust applications.
+
+## Next Steps
+
+After completing the quickstart, you can:
+1. Explore more advanced features
+2. Build custom modules
+3. Contribute to the project
 
 ## Basic Commands
 
@@ -130,9 +151,3 @@ import { productSchema } from '@/modules/products/schemas/productSchema';
 // Validate form data
 const result = productSchema.safeParse(formData);
 ```
-
-## Next Steps
-
-1. Explore the [Module Creation Guide](../guides/module-creation) for advanced module configuration
-2. Check out the [Architecture Overview](../architecture) to understand the project structure
-3. Review the [Best Practices](../guides/best-practices) for development guidelines
