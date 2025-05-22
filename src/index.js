@@ -3,6 +3,7 @@ const { program } = require("commander");
 const createApp = require("./commands/create-app");
 const addModule = require("./commands/add-module");
 const cleanupApp = require("./commands/cleanup-app");
+const taurifyApp = require("./commands/taurify-app");
 
 program
   .version("0.1.0")
@@ -42,5 +43,16 @@ program
   .command("cleanup")
   .description("Remove the example task manager app and its related files")
   .action(cleanupApp);
+
+// Add new command for converting to Tauri app
+program
+  .command("taurify")
+  .description("Convert your Next.js app to a Tauri desktop application")
+  .option(
+    "--package-manager <manager>",
+    "Package manager to use (npm/yarn/pnpm)",
+    "npm"
+  )
+  .action(taurifyApp);
 
 program.parse(process.argv);

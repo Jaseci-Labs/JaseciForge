@@ -27,6 +27,33 @@ Removes the example task manager app and prepares your project for development:
 - Creates a clean home page
 - Cleans up store configuration
 
+### Convert to Tauri App
+
+```bash
+npx create-jaseci-app taurify [options]
+```
+
+Converts your Next.js app to a Tauri desktop application:
+
+Options:
+- `--package-manager <manager>`: Package manager to use (npm/yarn/pnpm, default: npm)
+
+This command will:
+- Check for Tauri prerequisites (Rust and Cargo)
+- Install Tauri CLI
+- Update Next.js configuration for static exports
+- Initialize Tauri in your project
+- Configure Tauri for Next.js
+- Add Tauri scripts to package.json
+
+Prerequisites:
+- Rust and Cargo installed (https://rustup.rs/)
+- A Next.js project
+
+After running this command, you can:
+1. Start development: `npm run tauri dev`
+2. Build for production: `npm run tauri build`
+
 ### Add a New Module
 
 ```bash
