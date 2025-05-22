@@ -4,6 +4,38 @@ All notable changes to `create-jaseci-app` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21] - 2025-05-22
+### Added
+- New `taurify` command to convert Next.js apps to Tauri desktop applications
+  - Automatic prerequisite checking
+  - Platform-specific dependency validation
+  - Next.js configuration updates
+  - Tauri initialization and setup
+- New `cleanup` command to remove example task manager app
+  - Removes example module and files
+  - Creates clean home page
+  - Cleans up store configuration
+- Project root validation for all commands
+  - Ensures commands are run in valid JaseciStack projects
+  - Validates package.json existence
+  - Provides clear error messages
+
+### Changed
+- Refactored CLI commands into modular structure
+  - Separated command implementations into individual files
+  - Improved code organization and maintainability
+  - Enhanced error handling and validation
+- Updated documentation structure
+  - Created separate documentation files for each command
+  - Added detailed CLI tools section
+  - Improved command usage examples
+  - Added comprehensive prerequisites and troubleshooting guides
+
+### Fixed
+- Improved command validation and error handling
+- Enhanced documentation clarity and organization
+- Updated command examples and usage instructions
+
 ## [0.1.20] - 2025-05-09
 ### Added
 - Comprehensive tutorial documentation:

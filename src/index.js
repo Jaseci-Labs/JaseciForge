@@ -1,9 +1,25 @@
 #!/usr/bin/env node
 const { program } = require("commander");
+const fs = require("fs");
+const path = require("path");
 const createApp = require("./commands/create-app");
 const addModule = require("./commands/add-module");
 const cleanupApp = require("./commands/cleanup-app");
 const taurifyApp = require("./commands/taurify-app");
+
+// Utility function to check if we're in a project root
+const validateProjectRoot = () => {
+  const packageJsonPath = path.join(process.cwd(), "package.json");
+  if (!fs.existsSync(packageJsonPath)) {
+    console.error(
+      "Error: This command must be run in the root of a JaseciStack project."
+    );
+    console.error(
+      "Make sure you're in the correct directory and package.json exists."
+    );
+    process.exit(1);
+  }
+};
 
 program
   .version("0.1.0")
@@ -36,13 +52,19 @@ program
     "--api-base <base_path>",
     "Base path for API endpoints (e.g., '/todos' for JSONPlaceholder)"
   )
-  .action(addModule);
+  .action((moduleName, options) => {
+    validateProjectRoot();
+    addModule(moduleName, options);
+  });
 
 // Add new command for cleaning up example app
 program
   .command("cleanup")
   .description("Remove the example task manager app and its related files")
-  .action(cleanupApp);
+  .action(() => {
+    validateProjectRoot();
+    cleanupApp();
+  });
 
 // Add new command for converting to Tauri app
 program
@@ -53,6 +75,9 @@ program
     "Package manager to use (npm/yarn/pnpm)",
     "npm"
   )
-  .action(taurifyApp);
+  .action((options) => {
+    validateProjectRoot();
+    taurifyApp(options);
+  });
 
 program.parse(process.argv);
