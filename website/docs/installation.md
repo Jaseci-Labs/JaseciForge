@@ -23,6 +23,21 @@ During project creation, you'll be prompted to:
 2. Choose whether to include React Testing Library
 3. Select your preferred package manager (npm/yarn/pnpm)
 
+## Cleaning Up Example App
+
+After creating your project, you can remove the example task manager app:
+
+```bash
+cd my-app
+npx create-jaseci-app cleanup
+```
+
+This will:
+- Remove the example task manager module and its files
+- Create a clean home page
+- Clean up the Redux store configuration
+- Prepare your app for your own modules
+
 ## Development Setup
 
 1. Install dependencies:

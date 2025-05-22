@@ -35,6 +35,19 @@ npx create-jaseci-app my-app
 cd my-app
 ```
 
+### Clean Up Example App
+
+```bash
+# Remove the example task manager app and its related files
+npx create-jaseci-app cleanup
+```
+
+This command will:
+- Remove the example task manager module
+- Remove example task manager files
+- Create a clean home page
+- Clean up store configuration
+
 ### Start Development Server
 
 ```bash

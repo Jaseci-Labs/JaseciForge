@@ -19,6 +19,13 @@ const sidebars: SidebarsConfig = {
       label: "Installation",
     },
 
+    // CLI Tools section
+    {
+      type: "category",
+      label: "CLI Tools",
+      items: ["cli-tools"],
+    },
+
     // module creation
     {
       type: "doc",
