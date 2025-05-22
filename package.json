@@ -1,6 +1,6 @@
 {
   "name": "jaseci-forge",
-  "version": "0.1.22",
+  "version": "0.1.21",
   "description": "A CLI tool for generating JaseciStack Front-End templates",
   "main": "src/index.js",
   "bin": {
