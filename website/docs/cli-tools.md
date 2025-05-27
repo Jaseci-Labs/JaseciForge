@@ -19,6 +19,11 @@ Create a new module in your JaseciStack project with a complete structure includ
 
 [Learn more about add-module →](./cli/add-module)
 
+### Add Node
+Add a new node to an existing module with type definitions, API services, Redux actions, custom hooks, and state management.
+
+[Learn more about add-node →](./cli/add-node)
+
 ### Taurify
 Convert your Next.js app into a Tauri desktop application, allowing you to build cross-platform desktop apps with web technologies.
 

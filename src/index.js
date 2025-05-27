@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const createApp = require("./commands/create-app");
 const addModule = require("./commands/add-module");
+const addNode = require("./commands/add-node");
 const cleanupApp = require("./commands/cleanup-app");
 const taurifyApp = require("./commands/taurify-app");
 
@@ -55,6 +56,31 @@ program
   .action((moduleName, options) => {
     validateProjectRoot();
     addModule(moduleName, options);
+  });
+
+// Add new command for adding nodes to existing modules
+program
+  .command("add-node <module_name> <node_name>")
+  .description("Add a new node to an existing module")
+  .option(
+    "--node-type <type_definition>",
+    'Custom node type definition (e.g., "id:string,name:string,price:number,status:active|inactive")'
+  )
+  .option(
+    "--apis <endpoints>",
+    'Comma-separated list of API endpoints (e.g., "list,get,create,update,delete")'
+  )
+  .option(
+    "--auth <yes|no>",
+    "Whether to wrap the page with ProtectedRoute and use private_api (default: yes)"
+  )
+  .option(
+    "--api-base <base_path>",
+    "Base path for API endpoints (e.g., '/todos' for JSONPlaceholder)"
+  )
+  .action((moduleName, nodeName, options) => {
+    validateProjectRoot();
+    addNode(moduleName, nodeName, options);
   });
 
 // Add new command for cleaning up example app

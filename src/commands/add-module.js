@@ -321,14 +321,78 @@ export default function ${nodeName}Page() {
 
     console.log(`\n🎉 Module ${moduleName} created successfully! 🎉\n`);
     console.log("Next steps:");
-    console.log(`  1. Access your module at /${routePath}`);
+    console.log("\n1. Modify the node type definition:");
+    console.log(`   📁 nodes/${nodeName.toLowerCase()}-node.ts`);
+    console.log("   - Add or modify fields in the interface");
+    console.log("   - Update type definitions as needed");
+
+    console.log("\n2. Verify and customize the API service:");
+    console.log(`   📁 modules/${moduleName}/services/index.ts`);
+    console.log("   - Check generated API methods");
+    console.log("   - Add custom API endpoints if needed");
+
+    console.log("\n3. Review and enhance the Redux actions:");
+    console.log(`   📁 modules/${moduleName}/actions/index.ts`);
+    console.log("   - Add more async thunks for specific operations");
+    console.log("   - Implement error handling and loading states");
+
+    console.log("\n4. Check the Redux slice:");
+    console.log(`   📁 store/${nodeName.toLowerCase()}Slice.ts`);
+    console.log("   - Verify state structure");
+    console.log("   - Add more reducers if needed");
+
+    console.log("\n5. Customize the React hooks:");
+    console.log(`   📁 modules/${moduleName}/hooks/index.ts`);
+    console.log("   - Add custom hooks for specific operations");
+    console.log("   - Implement data transformation if needed");
+
+    console.log("\n6. Integrate with your page:");
+    console.log(`   📁 modules/${moduleName}/pages/${nodeName}Page.tsx`);
+    console.log("   - Import and use the custom hooks");
+    console.log("   - Add UI components to display and manage data");
+    console.log("   - Implement error handling and loading states");
+
+    console.log("\n7. Create UI Components:");
+    console.log("   Create the following component structure:");
+    console.log(`   📁 modules/${moduleName}/components/`);
+    console.log("   ├── templates/");
+    console.log(`   │   └── ${nodeName}Template.tsx`);
+    console.log("   ├── organisms/");
+    console.log(`   │   ├── ${nodeName}List.tsx`);
+    console.log(`   │   ├── ${nodeName}Card.tsx`);
+    console.log(`   │   └── ${nodeName}Form.tsx`);
+    console.log("   └── molecules/");
+    console.log(`       ├── ${nodeName}Item.tsx`);
+    console.log(`       ├── ${nodeName}Actions.tsx`);
+    console.log(`       └── ${nodeName}Status.tsx`);
+
+    console.log("\n8. Update Router Configuration:");
+    console.log(`   📁 app/${routePath}/`);
+    console.log("   ├── page.tsx");
+    console.log("   └── layout.tsx");
+    console.log("\n   Update metadata in layout.tsx:");
+    console.log("   - Set page title and description");
+    console.log("   - Add any required meta tags");
+    console.log("   - Configure layout options");
+
+    console.log("\nExample usage in your page:");
     console.log(
-      `  2. Customize the ${nodeName}Node interface in nodes/${nodeName.toLowerCase()}-node.ts`
+      `import { ${nodeName}Template } from '../components/templates/${nodeName}Template';`
     );
     console.log(
-      `  3. Implement your module's specific functionality in the created files`
+      `import { ${nodeName}List } from '../components/organisms/${nodeName}List';`
     );
-    console.log(`  4. Add more actions and reducers as needed in the slice`);
+    console.log(`import { use${nodeName}s } from '../hooks';`);
+    console.log(`\nfunction ${nodeName}Page() {`);
+    console.log(
+      `  const { items, isLoading, error, refresh } = use${nodeName}s();`
+    );
+    console.log(`  return (`);
+    console.log(`    <${nodeName}Template>`);
+    console.log(`      <${nodeName}List items={items} />`);
+    console.log(`    </${nodeName}Template>`);
+    console.log(`  );`);
+    console.log(`}`);
   } catch (error) {
     console.error("Failed to create module:", error.message);
     process.exit(1);
