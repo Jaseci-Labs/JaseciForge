@@ -7,14 +7,14 @@ const util = require("util");
 // Promisify exec to use async/await
 const execPromise = util.promisify(exec);
 
-async function createApp(appName) {
+async function createApp(appName, options = {}) {
   const targetDir = path.join(process.cwd(), appName);
   const templateDir = path.join(
     __dirname,
     "../..",
     "templates",
     "fe-base",
-    "task-manager"
+    options.example ? "task-manager" : "minimal"
   );
 
   // Ensure the template directory exists
@@ -159,7 +159,7 @@ async function createApp(appName) {
   const readmePath = path.join(targetDir, "README.md");
   const readmeContent = `# ${appName}
 
-A JaseciStack Front-End project featuring TaskForge, a simple task manager built with Next.js.
+A JaseciStack Front-End project built with Next.js.
 
 ## Getting Started
 Dependencies have been automatically installed using ${packageManager}.
@@ -193,11 +193,15 @@ ${
       } test\``
     : ""
 }
-
+${
+  options.example
+    ? `
 ## TaskForge Demo
 - Add tasks with a title.
 - Toggle tasks between "To Do" and "Done".
-- Explore customization guides in the \`docs/\` folder.
+- Explore customization guides in the \`docs/\` folder.`
+    : ""
+}
 `;
   await fs.writeFile(readmePath, readmeContent);
 
