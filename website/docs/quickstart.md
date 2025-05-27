@@ -35,7 +35,9 @@ npx create-jaseci-app my-app
 cd my-app
 ```
 
-### Clean Up Example App
+### Optional: Clean Up Example App
+
+If you included the example task manager app during project creation and want to remove it:
 
 ```bash
 # Remove the example task manager app and its related files

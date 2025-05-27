@@ -10,6 +10,7 @@ npx create-jaseci-app my-app
 
 ## Options
 
+- `--example`: Include example task manager app
 - `--storybook`: Include Storybook setup
 - `--testing`: Include React Testing Library setup
 - Package manager selection (npm/yarn/pnpm)
@@ -24,7 +25,7 @@ This command creates a new JaseciStack project with:
 - ESLint and Prettier for code quality
 - Jest and React Testing Library for testing
 - Storybook for component development (optional)
-- Example task manager module
+- Example task manager module (optional)
 - Authentication setup
 - Protected routes
 - API integration
@@ -34,6 +35,9 @@ This command creates a new JaseciStack project with:
 ```bash
 # Create a new project with default settings
 npx create-jaseci-app my-app
+
+# Create a project with example app
+npx create-jaseci-app my-app --example
 
 # Create a project with Storybook
 npx create-jaseci-app my-app --storybook

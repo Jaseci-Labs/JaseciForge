@@ -19,13 +19,14 @@ npx create-jaseci-app my-app
 ```
 
 During project creation, you'll be prompted to:
-1. Choose whether to include Storybook
-2. Choose whether to include React Testing Library
-3. Select your preferred package manager (npm/yarn/pnpm)
+1. Choose whether to include the example task manager app
+2. Choose whether to include Storybook
+3. Choose whether to include React Testing Library
+4. Select your preferred package manager (npm/yarn/pnpm)
 
-## Cleaning Up Example App
+## Optional: Cleaning Up Example App
 
-After creating your project, you can remove the example task manager app:
+If you included the example task manager app and want to remove it later:
 
 ```bash
 cd my-app
