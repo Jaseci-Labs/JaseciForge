@@ -23,27 +23,38 @@ async function createApp(appName, options = {}) {
     process.exit(1);
   }
 
-  // Prompts using @inquirer/prompts
-  const storybook = await confirm({
-    message: "Would you like to include Storybook?",
-    default: false,
-  });
+  // Use options if provided, otherwise prompt
+  let storybook =
+    typeof options.storybook === "boolean" ? options.storybook : undefined;
+  let testing =
+    typeof options.testinglibrary === "boolean"
+      ? options.testinglibrary
+      : undefined;
+  let packageManager = options.packageManager;
 
-  const testing = await confirm({
-    message: "Would you like to include React Testing Library?",
-    default: false,
-  });
-
-  // Prompt for package manager
-  const packageManager = await select({
-    message: "Which package manager would you like to use?",
-    choices: [
-      { name: "npm", value: "npm" },
-      { name: "yarn", value: "yarn" },
-      { name: "pnpm", value: "pnpm" },
-    ],
-    default: "npm",
-  });
+  if (storybook === undefined) {
+    storybook = await confirm({
+      message: "Would you like to include Storybook?",
+      default: false,
+    });
+  }
+  if (testing === undefined) {
+    testing = await confirm({
+      message: "Would you like to include React Testing Library?",
+      default: false,
+    });
+  }
+  if (!packageManager) {
+    packageManager = await select({
+      message: "Which package manager would you like to use?",
+      choices: [
+        { name: "npm", value: "npm" },
+        { name: "yarn", value: "yarn" },
+        { name: "pnpm", value: "pnpm" },
+      ],
+      default: "npm",
+    });
+  }
 
   // Copy base template
   await fs.copy(templateDir, targetDir);

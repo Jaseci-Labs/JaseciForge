@@ -5,7 +5,7 @@ Jaseci Forge provides several CLI tools to help you create and manage your appli
 ## Available Commands
 
 ### Create App
-Create a new JaseciStack project with a complete setup including Next.js, Redux Toolkit, Tailwind CSS, and more.
+Create a new JaseciStack project with a complete setup including Next.js, Redux Toolkit, Tailwind CSS, and more. Now supports `--storybook`, `--testinglibrary`, and `--package-manager` options for non-interactive setup.
 
 [Learn more about create-app →](./cli/create-app)
 

@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "vscode.typescript-language-features",
+    "vscode.json-language-features",
+    "vscode.debug-auto-launch",
+    "vscode.extension-editing"
+  ]
+}

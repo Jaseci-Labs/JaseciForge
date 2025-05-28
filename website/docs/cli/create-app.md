@@ -5,15 +5,15 @@ The `create-app` command is used to generate a new JaseciStack project.
 ## Usage
 
 ```bash
-npx create-jaseci-app my-app
+npx create-jaseci-app my-app [options]
 ```
 
 ## Options
 
 - `--example`: Include example task manager app
-- `--storybook`: Include Storybook setup
-- `--testing`: Include React Testing Library setup
-- Package manager selection (npm/yarn/pnpm)
+- `--storybook`: Include Storybook setup (if provided, skips prompt)
+- `--testinglibrary`: Include React Testing Library setup (if provided, skips prompt)
+- `--package-manager <manager>`: Specify package manager to use (npm/yarn/pnpm). If provided, skips prompt.
 
 ## What it Does
 
@@ -43,7 +43,10 @@ npx create-jaseci-app my-app --example
 npx create-jaseci-app my-app --storybook
 
 # Create a project with testing setup
-npx create-jaseci-app my-app --testing
+npx create-jaseci-app my-app --testinglibrary
+
+# Create a project with all options and yarn as package manager
+npx create-jaseci-app my-app --storybook --testinglibrary --package-manager yarn
 ```
 
 ## Next Steps

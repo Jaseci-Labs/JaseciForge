@@ -26,7 +26,15 @@ program
   .version("0.1.0")
   .arguments("<app_name>")
   .description("Generate a JaseciStack Front-End template")
-  .action(createApp);
+  .option("--storybook", "Include Storybook")
+  .option("--testinglibrary", "Include React Testing Library")
+  .option(
+    "--package-manager <manager>",
+    "Package manager to use (npm/yarn/pnpm)"
+  )
+  .action((appName, options) => {
+    createApp(appName, options);
+  });
 
 // Add new command for creating modules
 program
