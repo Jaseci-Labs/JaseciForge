@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { exec, spawn } from "child_process";
 import { promisify } from "util";
+import * as path from "path";
 
 const execAsync = promisify(exec);
 
@@ -8,6 +9,26 @@ interface ExecError extends Error {
   code?: number;
   stdout?: string;
   stderr?: string;
+}
+
+class CommandItem extends vscode.TreeItem {
+  constructor(
+    public readonly label: string,
+    public readonly commandId: string | undefined,
+    public readonly tooltip: string,
+    icon?: string,
+    collapsibleState: vscode.TreeItemCollapsibleState = vscode
+      .TreeItemCollapsibleState.None
+  ) {
+    super(label, collapsibleState);
+    this.tooltip = tooltip;
+    if (commandId) {
+      this.command = { command: commandId, title: label };
+    }
+    if (icon) {
+      this.iconPath = new vscode.ThemeIcon(icon);
+    }
+  }
 }
 
 class JaseciForgeTreeProvider implements vscode.TreeDataProvider<CommandItem> {
@@ -18,38 +39,56 @@ class JaseciForgeTreeProvider implements vscode.TreeDataProvider<CommandItem> {
     CommandItem | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
+  constructor(private getWorkingDir: () => string | undefined) {}
+
   getTreeItem(element: CommandItem): vscode.TreeItem {
     return element;
   }
 
   getChildren(): CommandItem[] {
-    return [
+    const workingDir = this.getWorkingDir();
+    const items: CommandItem[] = [
       new CommandItem(
-        "Create New App",
+        workingDir
+          ? `📁 ${path.basename(workingDir)}`
+          : "📁 Select Working Directory",
+        "jaseci-forge.selectWorkingDir",
+        workingDir || "Choose the folder to run commands in",
+        "folder"
+      ),
+      new CommandItem("─────────────", undefined, "", undefined), // separator
+      new CommandItem(
+        "✨ New App",
         "jaseci-forge.createApp",
-        "Create a new JaseciStack application"
+        "Create a new JaseciStack application",
+        "rocket"
       ),
       new CommandItem(
-        "Add Module",
+        "➕ Add Module",
         "jaseci-forge.addModule",
-        "Add a new module to your application"
+        "Add a new module",
+        "add"
       ),
       new CommandItem(
-        "Add Node",
+        "🧩 Add Node",
         "jaseci-forge.addNode",
-        "Add a new node to a module"
+        "Add a new node",
+        "symbol-field"
       ),
       new CommandItem(
-        "Cleanup Example App",
+        "🧹 Cleanup",
         "jaseci-forge.cleanup",
-        "Remove the example task manager app"
+        "Remove the example app",
+        "trash"
       ),
       new CommandItem(
-        "Convert to Tauri App",
+        "🖥️ Taurify",
         "jaseci-forge.taurify",
-        "Convert your app to a Tauri desktop application"
+        "Convert to Tauri app",
+        "desktop-download"
       ),
     ];
+    return items;
   }
 
   refresh(): void {
@@ -57,63 +96,36 @@ class JaseciForgeTreeProvider implements vscode.TreeDataProvider<CommandItem> {
   }
 }
 
-class CommandItem extends vscode.TreeItem {
-  constructor(
-    public readonly label: string,
-    public readonly commandId: string,
-    public readonly tooltip: string
-  ) {
-    super(label, vscode.TreeItemCollapsibleState.None);
-    this.command = {
-      command: commandId,
-      title: label,
-    };
-  }
-}
-
-// Helper to run a command with spawn and stream output
-async function runCommandWithOutput(
-  command: string,
-  args: string[],
-  cwd: string,
-  outputChannel: vscode.OutputChannel,
-  label: string
-) {
-  return new Promise<void>((resolve, reject) => {
-    outputChannel.appendLine(
-      `[${label}] Running: ${command} ${args.join(" ")}`
-    );
-    const child = spawn(command, args, { cwd, shell: true });
-    child.stdout.on("data", (data) => {
-      outputChannel.append(data.toString());
-    });
-    child.stderr.on("data", (data) => {
-      outputChannel.append(data.toString());
-    });
-    child.on("error", (err) => {
-      outputChannel.appendLine(`[${label}] Error: ${err.message}`);
-      outputChannel.show(true);
-      reject(err);
-    });
-    child.on("close", (code) => {
-      outputChannel.appendLine(`[${label}] Process exited with code ${code}`);
-      outputChannel.show(true);
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`${label} failed with exit code ${code}`));
-      }
-    });
-  });
-}
-
 export function activate(context: vscode.ExtensionContext) {
+  // Store the selected working directory
+  let workingDirectory: string | undefined = undefined;
+
   // Register Tree View
-  const treeProvider = new JaseciForgeTreeProvider();
+  const treeProvider = new JaseciForgeTreeProvider(() => workingDirectory);
   vscode.window.registerTreeDataProvider("jaseciForgeCommands", treeProvider);
 
   // Create Output Channel
   const outputChannel = vscode.window.createOutputChannel("Jaseci Forge");
+
+  // Select Working Directory Command
+  const selectWorkingDir = vscode.commands.registerCommand(
+    "jaseci-forge.selectWorkingDir",
+    async () => {
+      const folders = await vscode.window.showOpenDialog({
+        canSelectFolders: true,
+        canSelectFiles: false,
+        canSelectMany: false,
+        openLabel: "Select Working Directory",
+      });
+      if (folders && folders.length > 0) {
+        workingDirectory = folders[0].fsPath;
+        treeProvider.refresh();
+        vscode.window.showInformationMessage(
+          `Working directory set to: ${workingDirectory}`
+        );
+      }
+    }
+  );
 
   // Create App Command
   let createApp = vscode.commands.registerCommand(
@@ -148,9 +160,13 @@ export function activate(context: vscode.ExtensionContext) {
         );
 
         try {
-          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-          if (!workspaceFolder) {
-            throw new Error("No workspace folder found");
+          const cwd =
+            workingDirectory ||
+            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (!cwd) {
+            throw new Error(
+              "No working directory selected or workspace folder found"
+            );
           }
           const args = ["create-jaseci-app", appName];
           args.push(`--storybook=${storybook === "yes"}`);
@@ -159,7 +175,7 @@ export function activate(context: vscode.ExtensionContext) {
           await runCommandWithOutput(
             "npx",
             args,
-            workspaceFolder.uri.fsPath,
+            cwd,
             outputChannel,
             "Create App"
           );
@@ -213,9 +229,13 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         try {
-          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-          if (!workspaceFolder) {
-            throw new Error("No workspace folder found");
+          const cwd =
+            workingDirectory ||
+            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (!cwd) {
+            throw new Error(
+              "No working directory selected or workspace folder found"
+            );
           }
           const args = ["create-jaseci-app", "add-module", moduleName];
           if (nodeType) args.push(`--node-type=\"${nodeType}\"`);
@@ -225,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
           await runCommandWithOutput(
             "npx",
             args,
-            workspaceFolder.uri.fsPath,
+            cwd,
             outputChannel,
             "Add Module"
           );
@@ -285,9 +305,13 @@ export function activate(context: vscode.ExtensionContext) {
           });
 
           try {
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-              throw new Error("No workspace folder found");
+            const cwd =
+              workingDirectory ||
+              vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!cwd) {
+              throw new Error(
+                "No working directory selected or workspace folder found"
+              );
             }
             const args = [
               "create-jaseci-app",
@@ -302,7 +326,7 @@ export function activate(context: vscode.ExtensionContext) {
             await runCommandWithOutput(
               "npx",
               args,
-              workspaceFolder.uri.fsPath,
+              cwd,
               outputChannel,
               "Add Node"
             );
@@ -334,14 +358,18 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (confirm === "Yes") {
         try {
-          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-          if (!workspaceFolder) {
-            throw new Error("No workspace folder found");
+          const cwd =
+            workingDirectory ||
+            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (!cwd) {
+            throw new Error(
+              "No working directory selected or workspace folder found"
+            );
           }
           await runCommandWithOutput(
             "npx",
             ["create-jaseci-app", "cleanup"],
-            workspaceFolder.uri.fsPath,
+            cwd,
             outputChannel,
             "Cleanup"
           );
@@ -374,9 +402,13 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (packageManager) {
         try {
-          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-          if (!workspaceFolder) {
-            throw new Error("No workspace folder found");
+          const cwd =
+            workingDirectory ||
+            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (!cwd) {
+            throw new Error(
+              "No working directory selected or workspace folder found"
+            );
           }
           await runCommandWithOutput(
             "npx",
@@ -385,7 +417,7 @@ export function activate(context: vscode.ExtensionContext) {
               "taurify",
               `--package-manager=${packageManager}`,
             ],
-            workspaceFolder.uri.fsPath,
+            cwd,
             outputChannel,
             "Taurify"
           );
@@ -406,7 +438,51 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  context.subscriptions.push(createApp, addModule, addNode, cleanup, taurify);
+  context.subscriptions.push(
+    selectWorkingDir,
+    createApp,
+    addModule,
+    addNode,
+    cleanup,
+    taurify
+  );
+
+  // Helper to run a command with spawn and stream output
+  async function runCommandWithOutput(
+    command: string,
+    args: string[],
+    cwd: string,
+    outputChannel: vscode.OutputChannel,
+    label: string
+  ) {
+    return new Promise<void>((resolve, reject) => {
+      const startMsg = `[${label}] Running: ${command} ${args.join(" ")}`;
+      outputChannel.appendLine(startMsg);
+      const child = spawn(command, args, { cwd, shell: true });
+      child.stdout.on("data", (data) => {
+        outputChannel.append(data.toString());
+      });
+      child.stderr.on("data", (data) => {
+        outputChannel.append(data.toString());
+      });
+      child.on("error", (err) => {
+        const errMsg = `[${label}] Error: ${err.message}`;
+        outputChannel.appendLine(errMsg);
+        outputChannel.show(true);
+        reject(err);
+      });
+      child.on("close", (code) => {
+        const exitMsg = `[${label}] Process exited with code ${code}`;
+        outputChannel.appendLine(exitMsg);
+        outputChannel.show(true);
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`${label} failed with exit code ${code}`));
+        }
+      });
+    });
+  }
 }
 
 export function deactivate() {}

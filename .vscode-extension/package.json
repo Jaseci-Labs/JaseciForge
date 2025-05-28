@@ -11,6 +11,7 @@
     "Other"
   ],
   "activationEvents": [
+    "*",
     "onCommand:jaseci-forge.createApp",
     "onCommand:jaseci-forge.addModule",
     "onCommand:jaseci-forge.addNode",
