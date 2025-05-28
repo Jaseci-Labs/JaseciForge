@@ -26,13 +26,24 @@ program
   .version("0.1.0")
   .arguments("<app_name>")
   .description("Generate a JaseciStack Front-End template")
-  .option("--storybook", "Include Storybook")
-  .option("--testinglibrary", "Include React Testing Library")
+  .option("--storybook <boolean>", "Include Storybook (true/false)")
+  .option(
+    "--testinglibrary <boolean>",
+    "Include React Testing Library (true/false)"
+  )
   .option(
     "--package-manager <manager>",
     "Package manager to use (npm/yarn/pnpm)"
   )
   .action((appName, options) => {
+    let storybook =
+      options.storybook !== undefined
+        ? options.storybook === "true"
+        : undefined;
+    let testing =
+      options.testinglibrary !== undefined
+        ? options.testinglibrary === "true"
+        : undefined;
     createApp(appName, options);
   });
 

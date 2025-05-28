@@ -24,12 +24,24 @@ async function createApp(appName, options = {}) {
   }
 
   // Use options if provided, otherwise prompt
-  let storybook =
-    typeof options.storybook === "boolean" ? options.storybook : undefined;
-  let testing =
-    typeof options.testinglibrary === "boolean"
-      ? options.testinglibrary
-      : undefined;
+  let storybook;
+  if (typeof options.storybook === "string") {
+    storybook = options.storybook === "true";
+  } else if (typeof options.storybook === "boolean") {
+    storybook = options.storybook;
+  } else {
+    storybook = undefined;
+  }
+
+  let testing;
+  if (typeof options.testinglibrary === "string") {
+    testing = options.testinglibrary === "true";
+  } else if (typeof options.testinglibrary === "boolean") {
+    testing = options.testinglibrary;
+  } else {
+    testing = undefined;
+  }
+
   let packageManager = options.packageManager;
 
   if (storybook === undefined) {
