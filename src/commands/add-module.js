@@ -253,7 +253,9 @@ import { use${nodeName}s } from '../hooks';
       </DashboardTemplate>
  */
 
-export default function ${nodeName}Page() {
+export default function ${
+      nodeName.charAt(0).toUpperCase() + nodeName.slice(1)
+    }Page() {
   const { items, isLoading, error, refresh } = use${nodeName}s();
 
   if (isLoading) return <div>Loading...</div>;
@@ -312,7 +314,11 @@ export default function ${nodeName}Page() {
     await fs.ensureDir(routeDir);
 
     // Create page.tsx for the route
-    const routePageContent = `import ${nodeName}Page  from '@/modules/${moduleName}/pages/${nodeName}Page';\n\nexport default function Page() {\n  return <${nodeName}Page />;\n}\n`;
+    const routePageContent = `import ${
+      nodeName.charAt(0).toUpperCase() + nodeName.slice(1)
+    }Page  from '@/modules/${nodeName}/pages/${nodeName}Page';\n\nexport default function Page() {\n  return <${
+      nodeName.charAt(0).toUpperCase() + nodeName.slice(1)
+    }Page />;\n}\n`;
     await fs.writeFile(path.join(routeDir, "page.tsx"), routePageContent);
 
     // Create layout.tsx for the route
