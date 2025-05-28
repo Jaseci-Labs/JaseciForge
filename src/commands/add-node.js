@@ -76,7 +76,7 @@ async function addNode(moduleName, nodeName, options) {
       nodeType
     )}\n}`;
     await fs.writeFile(
-      path.join(moduleDir, "nodes", `${nodeName.toLowerCase()}-node.ts`),
+      path.join(targetDir, "nodes", `${nodeName.toLowerCase()}-node.ts`),
       nodeContent
     );
 
@@ -130,7 +130,7 @@ async function addNode(moduleName, nodeName, options) {
       .join(",\n\n");
 
     // Create service file
-    const serviceContent = `import { ${nodeName}Node } from '../nodes/${nodeName.toLowerCase()}-node';\nimport { ${
+    const serviceContent = `import { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { ${
       requiresAuth ? "private" : "public"
     }_api } from '@/_core/api-client';\n\nexport const ${nodeName}Api = {\n${serviceMethods}\n};\n`;
     await fs.writeFile(
@@ -139,21 +139,21 @@ async function addNode(moduleName, nodeName, options) {
     );
 
     // Create actions file
-    const actionsContent = `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Api } from '../services/${nodeName.toLowerCase()}-api';\nimport { ${nodeName}Node } from '../nodes/${nodeName.toLowerCase()}-node';\n\n// Example actions\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${moduleName.toLowerCase()}/${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Api.get${nodeName}s();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`;
+    const actionsContent = `import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { ${nodeName}Api } from '../services/${nodeName.toLowerCase()}-api';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\n// Example actions\nexport const fetch${nodeName}s = createAsyncThunk(\n  '${moduleName.toLowerCase()}/${nodeName.toLowerCase()}/fetchAll',\n  async (_, { rejectWithValue }) => {\n    try {\n      const response = await ${nodeName}Api.get${nodeName}s();\n      return response;\n    } catch (error) {\n      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch ${nodeName}s');\n    }\n  }\n);\n`;
     await fs.writeFile(
       path.join(moduleDir, "actions", `${nodeName.toLowerCase()}-actions.ts`),
       actionsContent
     );
 
     // Create hooks file
-    const hooksContent = `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions/${nodeName.toLowerCase()}-actions';\nimport { ${nodeName}Node } from '../nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${moduleName.toLowerCase()}.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`;
+    const hooksContent = `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions/${nodeName.toLowerCase()}-actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${moduleName.toLowerCase()}.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`;
     await fs.writeFile(
       path.join(moduleDir, "hooks", `${nodeName.toLowerCase()}-hooks.ts`),
       hooksContent
     );
 
     // Create slice file
-    const sliceContent = `import { createSlice, type PayloadAction } from '@reduxjs/toolkit';\nimport { ${nodeName}Node } from '@/modules/${moduleName}/nodes/${nodeName.toLowerCase()}-node';\nimport { fetch${nodeName}s } from '@/modules/${moduleName}/actions/${nodeName.toLowerCase()}-actions';\n\ninterface ${nodeName}State {\n  items: ${nodeName}Node[];\n  isLoading: boolean;\n  error: string | null;\n  success: boolean;\n  successMessage: string | null;\n}\n\nconst initialState: ${nodeName}State = {\n  items: [],\n  isLoading: false,\n  error: null,\n  success: false,\n  successMessage: null,\n};\n\nexport const ${nodeName.toLowerCase()}Slice = createSlice({\n  name: '${moduleName.toLowerCase()}/${nodeName.toLowerCase()}',\n  initialState,\n  reducers: {\n    setItems: (state, action: PayloadAction<${nodeName}Node[]>) => {\n      state.items = action.payload;\n    },\n    setLoading: (state, action: PayloadAction<boolean>) => {\n      state.isLoading = action.payload;\n    },\n    setError: (state, action: PayloadAction<string | null>) => {\n      state.error = action.payload;\n      state.success = false;\n    },\n    resetSuccess: (state) => {\n      state.success = false;\n      state.successMessage = null;\n    },\n  },\n  extraReducers: (builder) => {\n    builder.addCase(fetch${nodeName}s.pending, (state) => {\n      state.isLoading = true;\n      state.error = null;\n      state.success = false;\n      state.successMessage = null;\n    });\n    builder.addCase(fetch${nodeName}s.fulfilled, (state, action) => {\n      state.isLoading = false;\n      state.items = action.payload;\n      state.success = true;\n      state.successMessage = '${nodeName}s fetched successfully';\n    });\n    builder.addCase(fetch${nodeName}s.rejected, (state, action) => {\n      state.isLoading = false;\n      state.error = action.payload as string;\n      state.success = false;\n    });\n  },\n});\n\nexport const { setItems, setLoading, setError, resetSuccess } = ${nodeName.toLowerCase()}Slice.actions;\nexport default ${nodeName.toLowerCase()}Slice.reducer;\n`;
+    const sliceContent = `import { createSlice, type PayloadAction } from '@reduxjs/toolkit';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\nimport { fetch${nodeName}s } from '@/modules/${moduleName}/actions/${nodeName.toLowerCase()}-actions';\n\ninterface ${nodeName}State {\n  items: ${nodeName}Node[];\n  isLoading: boolean;\n  error: string | null;\n  success: boolean;\n  successMessage: string | null;\n}\n\nconst initialState: ${nodeName}State = {\n  items: [],\n  isLoading: false,\n  error: null,\n  success: false,\n  successMessage: null,\n};\n\nexport const ${nodeName.toLowerCase()}Slice = createSlice({\n  name: '${moduleName.toLowerCase()}/${nodeName.toLowerCase()}',\n  initialState,\n  reducers: {\n    setItems: (state, action: PayloadAction<${nodeName}Node[]>) => {\n      state.items = action.payload;\n    },\n    setLoading: (state, action: PayloadAction<boolean>) => {\n      state.isLoading = action.payload;\n    },\n    setError: (state, action: PayloadAction<string | null>) => {\n      state.error = action.payload;\n      state.success = false;\n    },\n    resetSuccess: (state) => {\n      state.success = false;\n      state.successMessage = null;\n    },\n  },\n  extraReducers: (builder) => {\n    builder.addCase(fetch${nodeName}s.pending, (state) => {\n      state.isLoading = true;\n      state.error = null;\n      state.success = false;\n      state.successMessage = null;\n    });\n    builder.addCase(fetch${nodeName}s.fulfilled, (state, action) => {\n      state.isLoading = false;\n      state.items = action.payload;\n      state.success = true;\n      state.successMessage = '${nodeName}s fetched successfully';\n    });\n    builder.addCase(fetch${nodeName}s.rejected, (state, action) => {\n      state.isLoading = false;\n      state.error = action.payload as string;\n      state.success = false;\n    });\n  },\n});\n\nexport const { setItems, setLoading, setError, resetSuccess } = ${nodeName.toLowerCase()}Slice.actions;\nexport default ${nodeName.toLowerCase()}Slice.reducer;\n`;
     await fs.writeFile(
       path.join(targetDir, "store", `${nodeName.toLowerCase()}Slice.ts`),
       sliceContent
@@ -164,7 +164,6 @@ async function addNode(moduleName, nodeName, options) {
       "actions/index.ts": `export * from './${nodeName.toLowerCase()}-actions';`,
       "hooks/index.ts": `export * from './${nodeName.toLowerCase()}-hooks';`,
       "services/index.ts": `export * from './${nodeName.toLowerCase()}-api';`,
-      "nodes/index.ts": `export * from './${nodeName.toLowerCase()}-node';`,
     };
 
     for (const [filename, content] of Object.entries(indexFiles)) {
@@ -189,7 +188,7 @@ async function addNode(moduleName, nodeName, options) {
       // Add reducer to store configuration at root level
       storeContent = storeContent.replace(
         /reducer: {([^}]*)}/,
-        `reducer: {$1\n    ${nodeName.toLowerCase()}s: ${nodeName.toLowerCase()}Reducer,`
+        `reducer: {$1\n    ${nodeName.toLowerCase()}s: ${nodeName.toLowerCase()}Reducer}`
       );
 
       await fs.writeFile(storePath, storeContent);
@@ -200,9 +199,7 @@ async function addNode(moduleName, nodeName, options) {
     );
     console.log("Next steps:");
     console.log("\n1. Modify the node type definition:");
-    console.log(
-      `   📁 modules/${moduleName}/nodes/${nodeName.toLowerCase()}-node.ts`
-    );
+    console.log(`   📁 nodes/${nodeName.toLowerCase()}-node.ts`);
     console.log("   - Add or modify fields in the interface");
     console.log("   - Update type definitions as needed");
 
