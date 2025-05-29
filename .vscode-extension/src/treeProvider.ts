@@ -57,31 +57,31 @@ export class JaseciForgeTreeProvider
           vscode.TreeItemCollapsibleState.None
         ),
         new CommandItem(
-          "✨ New App",
+          "New App",
           "jaseci-forge.createApp",
           "Create a new JaseciStack application",
           "rocket"
         ),
         new CommandItem(
-          "🎨 Module Generator",
+          "Module Generator",
           "jaseci-forge.moduleGenerator",
           "Open module generator interface",
           "tools"
         ),
         new CommandItem(
-          "🧩 Node Generator",
+          "Node Generator",
           "jaseci-forge.nodeGenerator",
           "Open node generator interface",
           "symbol-field"
         ),
         new CommandItem(
-          "🧹 Cleanup",
+          "Cleanup",
           "jaseci-forge.cleanup",
           "Remove the example app",
           "trash"
         ),
         new CommandItem(
-          "🖥️ Taurify",
+          "Taurify",
           "jaseci-forge.taurify",
           "Convert to Tauri app",
           "desktop-download"
