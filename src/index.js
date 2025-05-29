@@ -36,14 +36,6 @@ program
     "Package manager to use (npm/yarn/pnpm)"
   )
   .action((appName, options) => {
-    let storybook =
-      options.storybook !== undefined
-        ? options.storybook === "true"
-        : undefined;
-    let testing =
-      options.testinglibrary !== undefined
-        ? options.testinglibrary === "true"
-        : undefined;
     createApp(appName, options);
   });
 

@@ -5,7 +5,7 @@ The `add-node` command allows you to add a new node to an existing module in you
 ## Usage
 
 ```bash
-node ../index.js add-node <module_name> <node_name> [options]
+npx create-jaseci-app add-node <module_name> <node_name> [options]
 ```
 
 ## Arguments

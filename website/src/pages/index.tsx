@@ -7,27 +7,13 @@ import styles from "./index.module.css";
 
 function JaseciLogo() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <img
+      src="/img/logo.png"
+      alt="Jaseci Logo"
+      width="150"
+      height="150"
       className={styles.heroLogo}
-    >
-      <polygon
-        points="40,10 70,27.5 70,52.5 40,70 10,52.5 10,27.5"
-        stroke="#ED4B34"
-        strokeWidth="6"
-        fill="none"
-      />
-      <polygon
-        points="40,23 58,34.5 58,45.5 40,57 22,45.5 22,34.5"
-        stroke="#ED4B34"
-        strokeWidth="3"
-        fill="none"
-      />
-    </svg>
+    />
   );
 }
 

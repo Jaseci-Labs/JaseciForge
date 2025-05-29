@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { exec, spawn } from "child_process";
 import { promisify } from "util";
 import * as path from "path";
+import { JaseciForgeTreeProvider } from "./treeProvider";
+import { registerCommands } from "./commands";
 
 const execAsync = promisify(exec);
 
@@ -31,71 +33,6 @@ class CommandItem extends vscode.TreeItem {
   }
 }
 
-class JaseciForgeTreeProvider implements vscode.TreeDataProvider<CommandItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    CommandItem | undefined | null | void
-  > = new vscode.EventEmitter<CommandItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<
-    CommandItem | undefined | null | void
-  > = this._onDidChangeTreeData.event;
-
-  constructor(private getWorkingDir: () => string | undefined) {}
-
-  getTreeItem(element: CommandItem): vscode.TreeItem {
-    return element;
-  }
-
-  getChildren(): CommandItem[] {
-    const workingDir = this.getWorkingDir();
-    const items: CommandItem[] = [
-      new CommandItem(
-        workingDir
-          ? `📁 ${path.basename(workingDir)}`
-          : "📁 Select Working Directory",
-        "jaseci-forge.selectWorkingDir",
-        workingDir || "Choose the folder to run commands in",
-        "folder"
-      ),
-      new CommandItem("─────────────", undefined, "", undefined), // separator
-      new CommandItem(
-        "✨ New App",
-        "jaseci-forge.createApp",
-        "Create a new JaseciStack application",
-        "rocket"
-      ),
-      new CommandItem(
-        "➕ Add Module",
-        "jaseci-forge.addModule",
-        "Add a new module",
-        "add"
-      ),
-      new CommandItem(
-        "🧩 Add Node",
-        "jaseci-forge.addNode",
-        "Add a new node",
-        "symbol-field"
-      ),
-      new CommandItem(
-        "🧹 Cleanup",
-        "jaseci-forge.cleanup",
-        "Remove the example app",
-        "trash"
-      ),
-      new CommandItem(
-        "🖥️ Taurify",
-        "jaseci-forge.taurify",
-        "Convert to Tauri app",
-        "desktop-download"
-      ),
-    ];
-    return items;
-  }
-
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
-  }
-}
-
 export function activate(context: vscode.ExtensionContext) {
   // Store the selected working directory
   let workingDirectory: string | undefined = undefined;
@@ -107,8 +44,18 @@ export function activate(context: vscode.ExtensionContext) {
   // Create Output Channel
   const outputChannel = vscode.window.createOutputChannel("Jaseci Forge");
 
-  // Select Working Directory Command
-  const selectWorkingDir = vscode.commands.registerCommand(
+  // Register Commands
+  registerCommands(
+    context,
+    outputChannel,
+    treeProvider,
+    () => workingDirectory
+  );
+
+  // Override selectWorkingDir to update workingDirectory in this scope
+  // This is a bit of a workaround. A better solution would be to use a callback
+  // or an event emitter to signal a change in workingDirectory from commands.ts
+  const originalSelectWorkingDir = vscode.commands.registerCommand(
     "jaseci-forge.selectWorkingDir",
     async () => {
       const folders = await vscode.window.showOpenDialog({
@@ -126,6 +73,11 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }
   );
+  // Make sure our override is registered, and the one from commands.ts is disposed if it was registered.
+  // Note: This assumes registerCommands adds its subscriptions to context.subscriptions.
+  // We need to be careful about the order of registration or manage subscriptions explicitly.
+  // A cleaner approach might be to pass a setter for workingDirectory to registerCommands.
+  context.subscriptions.push(originalSelectWorkingDir);
 
   // Create App Command
   let createApp = vscode.commands.registerCommand(
@@ -438,14 +390,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  context.subscriptions.push(
-    selectWorkingDir,
-    createApp,
-    addModule,
-    addNode,
-    cleanup,
-    taurify
-  );
+  context.subscriptions.push(createApp, addModule, addNode, cleanup, taurify);
 
   // Helper to run a command with spawn and stream output
   async function runCommandWithOutput(

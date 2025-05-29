@@ -1,6 +1,6 @@
 # Add Module
 
-The `add-module` command creates a new module in your JaseciStack project with a complete structure including components, API integration, and state management.
+The `add-module` command lets you add a new module to your JaseciStack project, with support for multiple nodes and advanced configuration options.
 
 ## Usage
 
@@ -10,38 +10,78 @@ npx create-jaseci-app add-module <module_name> [options]
 
 ## Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--route` | Custom route path | `/<module_name>` |
-| `--node-type` | Custom node type name | `<ModuleName>Node` |
-| `--api-path` | Custom API endpoint path | `/<module_name>` |
-| `--package-manager` | Package manager to use | `npm` |
+- `--node <node_name>`: Specify a custom node name (defaults to module name)
+- `--path <route_path>`: Custom route path (e.g., "dashboard/products" or "(admin)/users")
+- `--apis <endpoints>`: Comma-separated list of API endpoints (e.g., "list,get,create,update,delete")
+- `--node-type <type_definition>`: Custom node type definition (e.g., "id:string,name:string,price:number,status:active|inactive")
+- `--auth <yes|no>`: Whether to wrap the page with ProtectedRoute and use private_api (default: yes)
+- `--api-base <base_path>`: Base path for API endpoints (e.g., "/todos" for JSONPlaceholder)
+
+## Default Node Type
+
+If no custom node type is specified, the following default type is used:
+
+```typescript
+{
+  id: string;
+  name: string;
+  description: string?;
+  created_at: string;
+  updated_at: string;
+  status: 'active' | 'inactive';
+}
+```
+
+## Default API Endpoints
+
+If no custom APIs are specified, the following endpoints are generated:
+
+- `getAll`: Get all items
+- `getById`: Get a specific item by ID
+- `create`: Create a new item
+- `update`: Update an existing item
+- `delete`: Delete an item
 
 ## What it Creates
 
 The command generates a complete module structure:
 
-1. **Module Directory**
-   - Components
-   - API integration
-   - State management
-   - Type definitions
+1. **Module Directory Structure**
+   ```
+   modules/
+   └── <module_name>/
+       ├── actions/        # Redux actions
+       ├── hooks/         # React hooks
+       ├── pages/         # Page components
+       ├── schemas/       # Zod schemas
+       ├── services/      # API services
+       └── utils/         # Utility functions
+   ```
 
-2. **API Integration**
-   - API client setup
-   - Type definitions
-   - Error handling
+2. **Node Definition**
+   - Creates a TypeScript interface in `nodes/<node_name>-node.ts`
+   - Generates Zod schema for validation
+   - Supports custom type definitions
 
-3. **State Management**
-   - Redux slice
-   - Actions and reducers
-   - Type definitions
+3. **API Integration**
+   - Generates API service methods based on specified endpoints
+   - Integrates with authentication (private_api/public_api)
+   - Handles error cases and loading states
 
-4. **Components**
-   - Main module component
-   - List component
-   - Form component
-   - Type definitions
+4. **State Management**
+   - Creates Redux slice with actions and reducers
+   - Implements loading, error, and success states
+   - Provides type-safe state management
+
+5. **Page Components**
+   - Generates a basic page component with authentication wrapper
+   - Implements data fetching and display
+   - Includes loading and error states
+
+6. **Route Configuration**
+   - Creates Next.js route in app directory
+   - Generates page.tsx and layout.tsx
+   - Configures metadata and layout options
 
 ## Examples
 
@@ -49,36 +89,21 @@ The command generates a complete module structure:
 # Basic module creation
 npx create-jaseci-app add-module users
 
-# Custom route
-npx create-jaseci-app add-module users --route /admin/users
+# Custom node type and APIs
+npx create-jaseci-app add-module products \
+  --node-type="id:string,name:string,price:number,status:active|inactive" \
+  --apis="getAll,create,update,delete" \
+  --api-base="/api/products"
 
-# Custom node type
-npx create-jaseci-app add-module users --node-type UserNode
+# Custom route path
+npx create-jaseci-app add-module users \
+  --path="dashboard/users" \
+  --auth="yes"
 
-# Custom API path
-npx create-jaseci-app add-module users --api-path /api/v1/users
-
-# Using yarn
-npx create-jaseci-app add-module users --package-manager yarn
-```
-
-## Module Structure
-
-```
-src/
-├── modules/
-│   └── users/                    # Module directory
-│       ├── components/           # React components
-│       │   ├── UserList.tsx     # List component
-│       │   ├── UserForm.tsx     # Form component
-│       │   └── index.tsx        # Main component
-│       ├── api/                 # API integration
-│       │   ├── usersApi.ts      # API client
-│       │   └── types.ts         # API types
-│       ├── store/              # State management
-│       │   ├── usersSlice.ts   # Redux slice
-│       │   └── types.ts        # State types
-│       └── types.ts            # Shared types
+# Public module without authentication
+npx create-jaseci-app add-module blog \
+  --auth="no" \
+  --api-base="/api/posts"
 ```
 
 ## Best Practices
@@ -88,20 +113,21 @@ src/
    - Use kebab-case for directory names
    - Use PascalCase for component names
 
-2. **Route Organization**
-   - Use meaningful route paths
-   - Follow RESTful conventions
-   - Consider nested routes
+2. **Node Type Definitions**
+   - Use descriptive field names
+   - Specify proper types (string, number, boolean)
+   - Use optional fields with `?` suffix
+   - Use union types with `|` for enums
 
-3. **Node Type Definitions**
-   - Use descriptive names
-   - Follow naming conventions
-   - Include proper documentation
-
-4. **API Integration**
+3. **API Integration**
    - Use consistent endpoint patterns
    - Implement proper error handling
-   - Follow API best practices
+   - Follow RESTful conventions
+
+4. **Route Organization**
+   - Use meaningful route paths
+   - Consider nested routes
+   - Use route groups when needed
 
 ## Troubleshooting
 

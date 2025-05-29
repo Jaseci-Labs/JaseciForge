@@ -1,10 +1,10 @@
 {
-  "name": "jaseci-forge",
-  "version": "0.1.22",
+  "name": "create-jaseci-app",
+  "version": "0.1.24",
   "description": "A CLI tool for generating JaseciStack Front-End templates",
   "main": "src/index.js",
   "bin": {
-    "jaseci-forge": "./src/index.js"
+    "create-jaseci-app": "./src/index.js"
   },
   "scripts": {
     "start": "node src/index.js"

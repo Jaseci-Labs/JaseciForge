@@ -23,7 +23,13 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "CLI Tools",
-      items: ["cli/create-app", "cli/cleanup", "cli/add-module", "cli/taurify"],
+      items: [
+        "cli/create-app",
+        "cli/cleanup",
+        "cli/add-module",
+        "cli/add-node",
+        "cli/taurify",
+      ],
     },
 
     // module creation
