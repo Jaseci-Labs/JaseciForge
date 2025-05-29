@@ -2,8 +2,9 @@
   "name": "jaseci-forge",
   "displayName": "Jaseci Forge",
   "description": "VS Code extension for Jaseci Forge CLI tools",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "musab-mah-7",
+  "icon": "resources/logo_128.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/Jaseci-Labs/JaseciForge"
