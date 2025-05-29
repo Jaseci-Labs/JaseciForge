@@ -13,7 +13,6 @@
   "activationEvents": [
     "*",
     "onCommand:jaseci-forge.createApp",
-    "onCommand:jaseci-forge.addModule",
     "onCommand:jaseci-forge.addNode",
     "onCommand:jaseci-forge.cleanup",
     "onCommand:jaseci-forge.taurify",
@@ -45,10 +44,6 @@
       {
         "command": "jaseci-forge.createApp",
         "title": "Jaseci Forge: Create New App"
-      },
-      {
-        "command": "jaseci-forge.addModule",
-        "title": "Jaseci Forge: Add Module"
       },
       {
         "command": "jaseci-forge.addNode",

@@ -61,7 +61,6 @@ class JaseciForgeTreeProvider {
                     : "📁 Select Working Directory", "jaseci-forge.selectWorkingDir", workingDir || "Choose the folder to run commands in", "folder"),
                 new CommandItem("─────────────", undefined, "Separator", undefined, vscode.TreeItemCollapsibleState.None),
                 new CommandItem("✨ New App", "jaseci-forge.createApp", "Create a new JaseciStack application", "rocket"),
-                new CommandItem("➕ Add Module", "jaseci-forge.addModule", "Add a new module", "add"),
                 new CommandItem("🎨 Module Generator", "jaseci-forge.moduleGenerator", "Open module generator interface", "tools"),
                 new CommandItem("🧩 Add Node", "jaseci-forge.addNode", "Add a new node", "symbol-field"),
                 new CommandItem("🧹 Cleanup", "jaseci-forge.cleanup", "Remove the example app", "trash"),

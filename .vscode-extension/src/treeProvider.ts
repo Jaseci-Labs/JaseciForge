@@ -63,12 +63,6 @@ export class JaseciForgeTreeProvider
           "rocket"
         ),
         new CommandItem(
-          "➕ Add Module",
-          "jaseci-forge.addModule",
-          "Add a new module",
-          "add"
-        ),
-        new CommandItem(
           "🎨 Module Generator",
           "jaseci-forge.moduleGenerator",
           "Open module generator interface",

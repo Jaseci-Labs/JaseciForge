@@ -160,56 +160,6 @@ function registerCommands(context, outputChannel, treeProvider, getWorkingDirect
             vscode.window.showErrorMessage(`Failed to create app: ${execError.message || "Unknown error"}`);
         }
     });
-    const addModule = vscode.commands.registerCommand("jaseci-forge.addModule", async () => {
-        const moduleName = await vscode.window.showInputBox({
-            prompt: "Enter module name",
-            placeHolder: "projectanagement",
-        });
-        if (moduleName) {
-            const config = vscode.workspace.getConfiguration("jaseciForge");
-            const defaultApiBase = config.get("defaultApiBase");
-            const nodeType = await vscode.window.showInputBox({
-                prompt: "Enter node type definition (optional)",
-                placeHolder: "id:string,name:string,description:string?",
-            });
-            const apis = await vscode.window.showInputBox({
-                prompt: "Enter API endpoints (optional)",
-                placeHolder: "getAll,create,update,delete",
-            });
-            const apiBase = await vscode.window.showInputBox({
-                prompt: "Enter API base path",
-                value: defaultApiBase,
-            });
-            const auth = await vscode.window.showQuickPick(["yes", "no"], {
-                placeHolder: "Use authentication?",
-                canPickMany: false,
-            });
-            try {
-                const cwd = getWorkingDirectory() ||
-                    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-                if (!cwd) {
-                    throw new Error("No working directory selected or workspace folder found");
-                }
-                const args = ["create-jaseci-app", "add-module", moduleName];
-                if (nodeType)
-                    args.push(`--node-type="${nodeType}"`);
-                if (apis)
-                    args.push(`--apis="${apis}"`);
-                if (apiBase)
-                    args.push(`--api-base="${apiBase}"`);
-                if (auth)
-                    args.push(`--auth="${auth}"`);
-                await runCommandWithOutput("npx", args, cwd, outputChannel, "Add Module");
-                vscode.window.showInformationMessage(`Successfully added new module: ${moduleName}`);
-            }
-            catch (error) {
-                const execError = error;
-                outputChannel.appendLine(`[Add Module] Error: ${execError.message}`);
-                outputChannel.show(true);
-                vscode.window.showErrorMessage(`Failed to add module: ${execError.message || "Unknown error"}`);
-            }
-        }
-    });
     const addNode = vscode.commands.registerCommand("jaseci-forge.addNode", async () => {
         const moduleName = await vscode.window.showInputBox({
             prompt: "Enter module name",
@@ -318,7 +268,7 @@ function registerCommands(context, outputChannel, treeProvider, getWorkingDirect
             }
         }
     });
-    context.subscriptions.push(selectWorkingDir, createApp, addModule, addNode, cleanup, taurify);
+    context.subscriptions.push(selectWorkingDir, createApp, addNode, cleanup, taurify);
 }
 exports.registerCommands = registerCommands;
 //# sourceMappingURL=commands.js.map
