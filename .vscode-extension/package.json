@@ -2,8 +2,12 @@
   "name": "jaseci-forge",
   "displayName": "Jaseci Forge",
   "description": "VS Code extension for Jaseci Forge CLI tools",
-  "version": "0.1.0",
-  "publisher": "jaseci-labs",
+  "version": "0.1.1",
+  "publisher": "musab-mah-7",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jaseci-Labs/JaseciForge"
+  },
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -11,7 +15,6 @@
     "Other"
   ],
   "activationEvents": [
-    "*",
     "onCommand:jaseci-forge.createApp",
     "onCommand:jaseci-forge.addNode",
     "onCommand:jaseci-forge.cleanup",

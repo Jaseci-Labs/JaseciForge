@@ -1,0 +1,16 @@
+# Exclude dev dependencies and build artifacts
+node_modules
+out/test
+.vscode
+.git
+*.vsix
+*.log
+yarn.lock
+package-lock.json
+
+# Exclude documentation and markdown files (except README and LICENSE)
+DEVELOPER.md
+ROADMAP.md
+
+# Exclude other unnecessary files
+*.tsbuildinfo 

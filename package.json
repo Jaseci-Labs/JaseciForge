@@ -1,6 +1,6 @@
 {
   "name": "create-jaseci-app",
-  "version": "0.1.24",
+  "version": "0.1.26",
   "description": "A CLI tool for generating JaseciStack Front-End templates",
   "main": "src/index.js",
   "bin": {
