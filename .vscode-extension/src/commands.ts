@@ -20,19 +20,21 @@ export async function runCommandWithOutput(
     const startMsg = `[${label}] Running: ${command} ${args.join(" ")}`;
     outputChannel.appendLine(startMsg);
     const child = spawn(command, args, { cwd, shell: true });
-    child.stdout.on("data", (data) => {
+
+    // Set up event listeners
+    const stdoutListener = (data: Buffer) => {
       outputChannel.append(data.toString());
-    });
-    child.stderr.on("data", (data) => {
+    };
+    const stderrListener = (data: Buffer) => {
       outputChannel.append(data.toString());
-    });
-    child.on("error", (err) => {
+    };
+    const errorListener = (err: Error) => {
       const errMsg = `[${label}] Error: ${err.message}`;
       outputChannel.appendLine(errMsg);
       outputChannel.show(true);
       reject(err);
-    });
-    child.on("close", (code) => {
+    };
+    const closeListener = (code: number | null) => {
       const exitMsg = `[${label}] Process exited with code ${code}`;
       outputChannel.appendLine(exitMsg);
       outputChannel.show(true);
@@ -41,41 +43,77 @@ export async function runCommandWithOutput(
       } else {
         reject(new Error(`${label} failed with exit code ${code}`));
       }
-    });
+    };
+
+    // Add event listeners
+    child.stdout.on("data", stdoutListener);
+    child.stderr.on("data", stderrListener);
+    child.on("error", errorListener);
+    child.on("close", closeListener);
+
+    // Cleanup function
+    const cleanup = () => {
+      child.stdout.removeListener("data", stdoutListener);
+      child.stderr.removeListener("data", stderrListener);
+      child.removeListener("error", errorListener);
+      child.removeListener("close", closeListener);
+    };
+
+    // Set up cleanup on both success and failure
+    const originalResolve = resolve;
+    resolve = () => {
+      cleanup();
+      originalResolve();
+    };
+    const originalReject = reject;
+    reject = (reason?: any) => {
+      cleanup();
+      originalReject(reason);
+    };
   });
+}
+
+// Helper to validate input
+function validateInput(input: string | undefined, fieldName: string): string {
+  if (!input || input.trim() === "") {
+    throw new Error(`${fieldName} is required`);
+  }
+  return input.trim();
 }
 
 export function registerCommands(
   context: vscode.ExtensionContext,
   outputChannel: vscode.OutputChannel,
   treeProvider: JaseciForgeTreeProvider,
-  getWorkingDirectory: () => string | undefined
+  getWorkingDirectory: () => string | undefined,
+  updateWorkingDirectory: (path: string | undefined) => void
 ) {
-  const selectWorkingDir = vscode.commands.registerCommand(
+  let selectWorkingDir = vscode.commands.registerCommand(
     "jaseci-forge.selectWorkingDir",
     async () => {
-      const folders = await vscode.window.showOpenDialog({
-        canSelectFolders: true,
-        canSelectFiles: false,
-        canSelectMany: false,
-        openLabel: "Select Working Directory",
-      });
-      if (folders && folders.length > 0) {
-        const workingDirectory = folders[0].fsPath;
-        // This is a bit of a hack, ideally we'd have a better way to update the working directory
-        // and refresh the tree view from here.
-        // For now, we'll rely on the main extension file to manage the workingDirectory state
-        // and call treeProvider.refresh() after this command updates the directory.
-        // This means the tree view might not update immediately if selectWorkingDir
-        // is called from somewhere else, but for now it works with the tree view item.
-        (treeProvider as any).workingDirectory = workingDirectory; // Update internal state if possible (hack)
-        treeProvider.refresh();
-        vscode.window.showInformationMessage(
-          `Working directory set to: ${workingDirectory}`
+      try {
+        const result = await vscode.window.showOpenDialog({
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+          openLabel: "Select Working Directory",
+        });
+
+        if (result && result.length > 0) {
+          const selectedPath = result[0].fsPath;
+          const config = vscode.workspace.getConfiguration("jaseciForge");
+          await config.update("workingDirectory", selectedPath, true);
+          updateWorkingDirectory(selectedPath);
+          vscode.window.showInformationMessage(
+            `Working directory set to: ${selectedPath}`
+          );
+        }
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to set working directory: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
         );
-        // We need a way to inform the main extension.ts that the directory has changed.
-        // Using a custom event or a callback passed during registration would be cleaner.
-        // For simplicity now, we'll assume extension.ts handles this.
       }
     }
   );
@@ -83,16 +121,30 @@ export function registerCommands(
   const createApp = vscode.commands.registerCommand(
     "jaseci-forge.createApp",
     async () => {
-      const appName = await vscode.window.showInputBox({
-        prompt: "Enter your app name",
-        placeHolder: "my-jaseci-app",
-      });
+      try {
+        const appName = await vscode.window.showInputBox({
+          prompt: "Enter your app name",
+          placeHolder: "my-jaseci-app",
+          validateInput: (value) => {
+            if (!value || value.trim() === "") {
+              return "App name is required";
+            }
+            if (!/^[a-z0-9-]+$/.test(value)) {
+              return "App name can only contain lowercase letters, numbers, and hyphens";
+            }
+            return null;
+          },
+        });
 
-      if (appName) {
+        if (!appName) {
+          return;
+        }
+
         const storybook = await vscode.window.showQuickPick(["yes", "no"], {
           placeHolder: "Include Storybook?",
           canPickMany: false,
         });
+
         const testinglibrary = await vscode.window.showQuickPick(
           ["yes", "no"],
           {
@@ -100,6 +152,7 @@ export function registerCommands(
             canPickMany: false,
           }
         );
+
         const packageManager = await vscode.window.showQuickPick(
           ["npm", "yarn", "pnpm"],
           {
@@ -108,37 +161,37 @@ export function registerCommands(
           }
         );
 
-        try {
-          const cwd =
-            getWorkingDirectory() ||
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (!cwd) {
-            throw new Error(
-              "No working directory selected or workspace folder found"
-            );
-          }
-          const args = ["create-jaseci-app", appName];
-          args.push(`--storybook=${storybook === "yes"}`);
-          args.push(`--testinglibrary=${testinglibrary === "yes"}`);
-          if (packageManager) args.push(`--package-manager=${packageManager}`);
-          await runCommandWithOutput(
-            "npx",
-            args,
-            cwd,
-            outputChannel,
-            "Create App"
-          );
-          vscode.window.showInformationMessage(
-            `Successfully created new JaseciStack app: ${appName}`
-          );
-        } catch (error) {
-          const execError = error as ExecError;
-          outputChannel.appendLine(`[Create App] Error: ${execError.message}`);
-          outputChannel.show(true);
-          vscode.window.showErrorMessage(
-            `Failed to create app: ${execError.message || "Unknown error"}`
+        const cwd =
+          getWorkingDirectory() ||
+          vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!cwd) {
+          throw new Error(
+            "No working directory selected or workspace folder found"
           );
         }
+
+        const args = ["create-jaseci-app", appName];
+        args.push(`--storybook=${storybook === "yes"}`);
+        args.push(`--testinglibrary=${testinglibrary === "yes"}`);
+        if (packageManager) args.push(`--package-manager=${packageManager}`);
+
+        await runCommandWithOutput(
+          "npx",
+          args,
+          cwd,
+          outputChannel,
+          "Create App"
+        );
+        vscode.window.showInformationMessage(
+          `Successfully created new JaseciStack app: ${appName}`
+        );
+      } catch (error) {
+        const execError = error as ExecError;
+        outputChannel.appendLine(`[Create App] Error: ${execError.message}`);
+        outputChannel.show(true);
+        vscode.window.showErrorMessage(
+          `Failed to create app: ${execError.message || "Unknown error"}`
+        );
       }
     }
   );

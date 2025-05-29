@@ -16,7 +16,9 @@
     "onCommand:jaseci-forge.addModule",
     "onCommand:jaseci-forge.addNode",
     "onCommand:jaseci-forge.cleanup",
-    "onCommand:jaseci-forge.taurify"
+    "onCommand:jaseci-forge.taurify",
+    "onCommand:jaseci-forge.selectWorkingDir",
+    "onCommand:jaseci-forge.moduleGenerator"
   ],
   "main": "./out/extension.js",
   "scripts": {
@@ -59,11 +61,24 @@
       {
         "command": "jaseci-forge.taurify",
         "title": "Jaseci Forge: Convert to Tauri App"
+      },
+      {
+        "command": "jaseci-forge.selectWorkingDir",
+        "title": "Jaseci Forge: Select Working Directory"
+      },
+      {
+        "command": "jaseci-forge.moduleGenerator",
+        "title": "Jaseci Forge: Open Module Generator"
       }
     ],
     "configuration": {
       "title": "Jaseci Forge",
       "properties": {
+        "jaseciForge.workingDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "The working directory for Jaseci Forge commands"
+        },
         "jaseciForge.defaultApiBase": {
           "type": "string",
           "default": "/api",
@@ -79,17 +94,18 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "jaseciForge",
+          "id": "jaseci-forge-sidebar",
           "title": "Jaseci Forge",
           "icon": "resources/zap.svg"
         }
       ]
     },
     "views": {
-      "jaseciForge": [
+      "jaseci-forge-sidebar": [
         {
+          "type": "tree",
           "id": "jaseciForgeCommands",
-          "name": "Jaseci Forge"
+          "name": "Jaseci Forge Commands"
         }
       ]
     }

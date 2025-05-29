@@ -38,49 +38,83 @@ export class JaseciForgeTreeProvider
   }
 
   getChildren(): CommandItem[] {
-    const workingDir = this.getWorkingDir();
-    const items: CommandItem[] = [
-      new CommandItem(
-        workingDir
-          ? `📁 ${path.basename(workingDir)}`
-          : "📁 Select Working Directory",
-        "jaseci-forge.selectWorkingDir",
-        workingDir || "Choose the folder to run commands in",
-        "folder"
-      ),
-      new CommandItem("─────────────", undefined, "", undefined), // separator
-      new CommandItem(
-        "✨ New App",
-        "jaseci-forge.createApp",
-        "Create a new JaseciStack application",
-        "rocket"
-      ),
-      new CommandItem(
-        "➕ Add Module",
-        "jaseci-forge.addModule",
-        "Add a new module",
-        "add"
-      ),
-      new CommandItem(
-        "🧩 Add Node",
-        "jaseci-forge.addNode",
-        "Add a new node",
-        "symbol-field"
-      ),
-      new CommandItem(
-        "🧹 Cleanup",
-        "jaseci-forge.cleanup",
-        "Remove the example app",
-        "trash"
-      ),
-      new CommandItem(
-        "🖥️ Taurify",
-        "jaseci-forge.taurify",
-        "Convert to Tauri app",
-        "desktop-download"
-      ),
-    ];
-    return items;
+    try {
+      const workingDir = this.getWorkingDir();
+      const items: CommandItem[] = [
+        new CommandItem(
+          workingDir
+            ? `📁 ${path.basename(workingDir)}`
+            : "📁 Select Working Directory",
+          "jaseci-forge.selectWorkingDir",
+          workingDir || "Choose the folder to run commands in",
+          "folder"
+        ),
+        new CommandItem(
+          "─────────────",
+          undefined,
+          "Separator",
+          undefined,
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new CommandItem(
+          "✨ New App",
+          "jaseci-forge.createApp",
+          "Create a new JaseciStack application",
+          "rocket"
+        ),
+        new CommandItem(
+          "➕ Add Module",
+          "jaseci-forge.addModule",
+          "Add a new module",
+          "add"
+        ),
+        new CommandItem(
+          "🎨 Module Generator",
+          "jaseci-forge.moduleGenerator",
+          "Open module generator interface",
+          "tools"
+        ),
+        new CommandItem(
+          "🧩 Add Node",
+          "jaseci-forge.addNode",
+          "Add a new node",
+          "symbol-field"
+        ),
+        new CommandItem(
+          "🧹 Cleanup",
+          "jaseci-forge.cleanup",
+          "Remove the example app",
+          "trash"
+        ),
+        new CommandItem(
+          "🖥️ Taurify",
+          "jaseci-forge.taurify",
+          "Convert to Tauri app",
+          "desktop-download"
+        ),
+      ];
+
+      // Add a warning if no working directory is selected
+      if (!workingDir) {
+        items.push(
+          new CommandItem(
+            "⚠️ No working directory selected",
+            undefined,
+            "Please select a working directory to run commands",
+            "warning"
+          )
+        );
+      }
+
+      return items;
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        `Error loading Jaseci Forge commands: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      return [];
+    }
   }
 
   refresh(): void {

@@ -44,353 +44,113 @@ export function activate(context: vscode.ExtensionContext) {
   // Create Output Channel
   const outputChannel = vscode.window.createOutputChannel("Jaseci Forge");
 
+  // Function to update working directory
+  function updateWorkingDirectory(newPath: string | undefined) {
+    workingDirectory = newPath;
+    // Refresh tree view
+    treeProvider.refresh();
+  }
+
   // Register Commands
   registerCommands(
     context,
     outputChannel,
     treeProvider,
-    () => workingDirectory
+    () => workingDirectory,
+    updateWorkingDirectory
   );
 
-  // Override selectWorkingDir to update workingDirectory in this scope
-  // This is a bit of a workaround. A better solution would be to use a callback
-  // or an event emitter to signal a change in workingDirectory from commands.ts
-  const originalSelectWorkingDir = vscode.commands.registerCommand(
-    "jaseci-forge.selectWorkingDir",
-    async () => {
-      const folders = await vscode.window.showOpenDialog({
-        canSelectFolders: true,
-        canSelectFiles: false,
-        canSelectMany: false,
-        openLabel: "Select Working Directory",
-      });
-      if (folders && folders.length > 0) {
-        workingDirectory = folders[0].fsPath;
-        treeProvider.refresh();
-        vscode.window.showInformationMessage(
-          `Working directory set to: ${workingDirectory}`
-        );
-      }
-    }
-  );
-  // Make sure our override is registered, and the one from commands.ts is disposed if it was registered.
-  // Note: This assumes registerCommands adds its subscriptions to context.subscriptions.
-  // We need to be careful about the order of registration or manage subscriptions explicitly.
-  // A cleaner approach might be to pass a setter for workingDirectory to registerCommands.
-  context.subscriptions.push(originalSelectWorkingDir);
-
-  // Create App Command
-  let createApp = vscode.commands.registerCommand(
-    "jaseci-forge.createApp",
-    async () => {
-      const appName = await vscode.window.showInputBox({
-        prompt: "Enter your app name",
-        placeHolder: "my-jaseci-app",
-      });
-
-      if (appName) {
-        // Prompt for Storybook
-        const storybook = await vscode.window.showQuickPick(["yes", "no"], {
-          placeHolder: "Include Storybook?",
-          canPickMany: false,
-        });
-        // Prompt for Testing Library
-        const testinglibrary = await vscode.window.showQuickPick(
-          ["yes", "no"],
-          {
-            placeHolder: "Include React Testing Library?",
-            canPickMany: false,
-          }
-        );
-        // Prompt for Package Manager
-        const packageManager = await vscode.window.showQuickPick(
-          ["npm", "yarn", "pnpm"],
-          {
-            placeHolder: "Select package manager",
-            canPickMany: false,
-          }
-        );
-
-        try {
-          const cwd =
-            workingDirectory ||
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (!cwd) {
-            throw new Error(
-              "No working directory selected or workspace folder found"
-            );
-          }
-          const args = ["create-jaseci-app", appName];
-          args.push(`--storybook=${storybook === "yes"}`);
-          args.push(`--testinglibrary=${testinglibrary === "yes"}`);
-          if (packageManager) args.push(`--package-manager=${packageManager}`);
-          await runCommandWithOutput(
-            "npx",
-            args,
-            cwd,
-            outputChannel,
-            "Create App"
-          );
-          vscode.window.showInformationMessage(
-            `Successfully created new JaseciStack app: ${appName}`
-          );
-        } catch (error) {
-          const execError = error as ExecError;
-          outputChannel.appendLine(`[Create App] Error: ${execError.message}`);
-          outputChannel.show(true);
-          vscode.window.showErrorMessage(
-            `Failed to create app: ${execError.message || "Unknown error"}`
-          );
+  // Module Generator Command
+  let moduleGenerator = vscode.commands.registerCommand(
+    "jaseci-forge.moduleGenerator",
+    () => {
+      const panel = vscode.window.createWebviewPanel(
+        "moduleGenerator",
+        "Module Generator",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
         }
-      }
-    }
-  );
+      );
 
-  // Add Module Command
-  let addModule = vscode.commands.registerCommand(
-    "jaseci-forge.addModule",
-    async () => {
-      const moduleName = await vscode.window.showInputBox({
-        prompt: "Enter module name",
-        placeHolder: "projectanagement",
+      panel.webview.html = getWebviewContent(panel.webview);
+
+      // Send initial working directory
+      panel.webview.postMessage({
+        command: "updateWorkingDir",
+        path: workingDirectory,
       });
 
-      if (moduleName) {
-        const config = vscode.workspace.getConfiguration("jaseciForge");
-        const defaultApiBase = config.get("defaultApiBase");
-        const defaultAuth = config.get("defaultAuth");
-
-        const nodeType = await vscode.window.showInputBox({
-          prompt: "Enter node type definition (optional)",
-          placeHolder: "id:string,name:string,description:string?",
-        });
-
-        const apis = await vscode.window.showInputBox({
-          prompt: "Enter API endpoints (optional)",
-          placeHolder: "getAll,create,update,delete",
-        });
-
-        const apiBase = await vscode.window.showInputBox({
-          prompt: "Enter API base path",
-          value: defaultApiBase as string,
-        });
-
-        const auth = await vscode.window.showQuickPick(["yes", "no"], {
-          placeHolder: "Use authentication?",
-          canPickMany: false,
-        });
-
-        try {
-          const cwd =
-            workingDirectory ||
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (!cwd) {
-            throw new Error(
-              "No working directory selected or workspace folder found"
-            );
-          }
-          const args = ["create-jaseci-app", "add-module", moduleName];
-          if (nodeType) args.push(`--node-type=\"${nodeType}\"`);
-          if (apis) args.push(`--apis=\"${apis}\"`);
-          if (apiBase) args.push(`--api-base=\"${apiBase}\"`);
-          if (auth) args.push(`--auth=\"${auth}\"`);
-          await runCommandWithOutput(
-            "npx",
-            args,
-            cwd,
-            outputChannel,
-            "Add Module"
-          );
-          vscode.window.showInformationMessage(
-            `Successfully added new module: ${moduleName}`
-          );
-        } catch (error) {
-          const execError = error as ExecError;
-          outputChannel.appendLine(`[Add Module] Error: ${execError.message}`);
-          outputChannel.show(true);
-          vscode.window.showErrorMessage(
-            `Failed to add module: ${execError.message || "Unknown error"}`
-          );
-        }
-      }
-    }
-  );
-
-  // Add Node Command
-  let addNode = vscode.commands.registerCommand(
-    "jaseci-forge.addNode",
-    async () => {
-      const moduleName = await vscode.window.showInputBox({
-        prompt: "Enter module name",
-        placeHolder: "projectanagement",
-      });
-
-      if (moduleName) {
-        const nodeName = await vscode.window.showInputBox({
-          prompt: "Enter node name",
-          placeHolder: "Comment",
-        });
-
-        if (nodeName) {
+      // Listen for working directory changes
+      const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration("jaseciForge")) {
           const config = vscode.workspace.getConfiguration("jaseciForge");
-          const defaultApiBase = config.get("defaultApiBase");
-          const defaultAuth = config.get("defaultAuth");
-
-          const nodeType = await vscode.window.showInputBox({
-            prompt: "Enter node type definition (optional)",
-            placeHolder: "id:string,content:string,author_id:number",
+          const newPath = config.get<string>("workingDirectory");
+          updateWorkingDirectory(newPath);
+          panel.webview.postMessage({
+            command: "updateWorkingDir",
+            path: newPath,
           });
+        }
+      });
+      context.subscriptions.push(disposable);
 
-          const apis = await vscode.window.showInputBox({
-            prompt: "Enter API endpoints (optional)",
-            placeHolder: "getAll,create,update,delete",
-          });
+      panel.webview.onDidReceiveMessage(
+        async (message) => {
+          if (message.command === "generate") {
+            try {
+              const cwd =
+                workingDirectory ||
+                vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+              if (!cwd) {
+                throw new Error(
+                  "No working directory selected or workspace folder found"
+                );
+              }
+              const args = [
+                "create-jaseci-app",
+                "add-module",
+                message.moduleName,
+              ];
+              if (message.nodeName) args.push(`--node="${message.nodeName}"`);
+              if (message.routePath) args.push(`--path="${message.routePath}"`);
+              if (message.apiEndpoints)
+                args.push(`--apis="${message.apiEndpoints}"`);
+              if (message.nodeType)
+                args.push(`--node-type="${message.nodeType}"`);
+              if (!message.auth) args.push("--auth=no");
+              if (message.apiBase) args.push(`--api-base="${message.apiBase}"`);
 
-          const apiBase = await vscode.window.showInputBox({
-            prompt: "Enter API base path",
-            value: defaultApiBase as string,
-          });
-
-          const auth = await vscode.window.showQuickPick(["yes", "no"], {
-            placeHolder: "Use authentication?",
-            canPickMany: false,
-          });
-
-          try {
-            const cwd =
-              workingDirectory ||
-              vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            if (!cwd) {
-              throw new Error(
-                "No working directory selected or workspace folder found"
+              await runCommandWithOutput(
+                "npx",
+                args,
+                cwd,
+                outputChannel,
+                "Add Module"
+              );
+              vscode.window.showInformationMessage(
+                `Successfully added new module: ${message.moduleName}`
+              );
+            } catch (error) {
+              const execError = error as ExecError;
+              outputChannel.appendLine(
+                `[Add Module] Error: ${execError.message}`
+              );
+              outputChannel.show(true);
+              vscode.window.showErrorMessage(
+                `Failed to add module: ${execError.message || "Unknown error"}`
               );
             }
-            const args = [
-              "create-jaseci-app",
-              "add-node",
-              moduleName,
-              nodeName,
-            ];
-            if (nodeType) args.push(`--node-type=\"${nodeType}\"`);
-            if (apis) args.push(`--apis=\"${apis}\"`);
-            if (apiBase) args.push(`--api-base=\"${apiBase}\"`);
-            if (auth) args.push(`--auth=\"${auth}\"`);
-            await runCommandWithOutput(
-              "npx",
-              args,
-              cwd,
-              outputChannel,
-              "Add Node"
-            );
-            vscode.window.showInformationMessage(
-              `Successfully added new node: ${nodeName} to module: ${moduleName}`
-            );
-          } catch (error) {
-            const execError = error as ExecError;
-            outputChannel.appendLine(`[Add Node] Error: ${execError.message}`);
-            outputChannel.show(true);
-            vscode.window.showErrorMessage(
-              `Failed to add node: ${execError.message || "Unknown error"}`
-            );
           }
-        }
-      }
-    }
-  );
-
-  // Cleanup Command
-  let cleanup = vscode.commands.registerCommand(
-    "jaseci-forge.cleanup",
-    async () => {
-      const confirm = await vscode.window.showWarningMessage(
-        "Are you sure you want to remove the example task manager app?",
-        { modal: true },
-        "Yes"
+        },
+        undefined,
+        context.subscriptions
       );
-
-      if (confirm === "Yes") {
-        try {
-          const cwd =
-            workingDirectory ||
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (!cwd) {
-            throw new Error(
-              "No working directory selected or workspace folder found"
-            );
-          }
-          await runCommandWithOutput(
-            "npx",
-            ["create-jaseci-app", "cleanup"],
-            cwd,
-            outputChannel,
-            "Cleanup"
-          );
-          vscode.window.showInformationMessage(
-            "Successfully cleaned up example app"
-          );
-        } catch (error) {
-          const execError = error as ExecError;
-          outputChannel.appendLine(`[Cleanup] Error: ${execError.message}`);
-          outputChannel.show(true);
-          vscode.window.showErrorMessage(
-            `Failed to cleanup: ${execError.message || "Unknown error"}`
-          );
-        }
-      }
     }
   );
 
-  // Taurify Command
-  let taurify = vscode.commands.registerCommand(
-    "jaseci-forge.taurify",
-    async () => {
-      const packageManager = await vscode.window.showQuickPick(
-        ["npm", "yarn", "pnpm"],
-        {
-          placeHolder: "Select package manager",
-          canPickMany: false,
-        }
-      );
-
-      if (packageManager) {
-        try {
-          const cwd =
-            workingDirectory ||
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (!cwd) {
-            throw new Error(
-              "No working directory selected or workspace folder found"
-            );
-          }
-          await runCommandWithOutput(
-            "npx",
-            [
-              "create-jaseci-app",
-              "taurify",
-              `--package-manager=${packageManager}`,
-            ],
-            cwd,
-            outputChannel,
-            "Taurify"
-          );
-          vscode.window.showInformationMessage(
-            "Successfully converted to Tauri app"
-          );
-        } catch (error) {
-          const execError = error as ExecError;
-          outputChannel.appendLine(`[Taurify] Error: ${execError.message}`);
-          outputChannel.show(true);
-          vscode.window.showErrorMessage(
-            `Failed to convert to Tauri: ${
-              execError.message || "Unknown error"
-            }`
-          );
-        }
-      }
-    }
-  );
-
-  context.subscriptions.push(createApp, addModule, addNode, cleanup, taurify);
+  context.subscriptions.push(moduleGenerator);
 
   // Helper to run a command with spawn and stream output
   async function runCommandWithOutput(
@@ -431,3 +191,231 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+function getWebviewContent(webview: vscode.Webview): string {
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Generator</title>
+    <style>
+      body {
+        padding: 20px;
+        font-family: var(--vscode-font-family);
+        color: var(--vscode-foreground);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--vscode-foreground);
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--vscode-input-border);
+        background: var(--vscode-input-background);
+        color: var(--vscode-input-foreground);
+        border-radius: 2px;
+      }
+      .help-text {
+        font-size: 12px;
+        color: var(--vscode-descriptionForeground);
+        margin-top: 4px;
+      }
+      .switch-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .switch-group label {
+        margin-bottom: 0;
+        margin-left: 8px;
+      }
+      button {
+        background: var(--vscode-button-background);
+        color: var(--vscode-button-foreground);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 2px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--vscode-button-hoverBackground);
+      }
+      .preview {
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--vscode-editor-background);
+        border: 1px solid var(--vscode-input-border);
+        border-radius: 2px;
+      }
+      .preview pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .working-dir {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: var(--vscode-editor-background);
+        border: 1px solid var(--vscode-input-border);
+        border-radius: 2px;
+      }
+      .working-dir.warning {
+        border-color: var(--vscode-errorForeground);
+      }
+      .working-dir .label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .working-dir .path {
+        font-family: var(--vscode-editor-font-family);
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Module Generator</h2>
+    
+    <div id="workingDir" class="working-dir">
+      <div class="label">Working Directory:</div>
+      <div class="path">Select a working directory first</div>
+    </div>
+
+    <div class="form-group">
+      <label for="moduleName">Module Name *</label>
+      <input type="text" id="moduleName" placeholder="e.g., users, products">
+      <div class="help-text">The name of your module</div>
+    </div>
+
+    <div class="form-group">
+      <label for="nodeName">Node Name</label>
+      <input type="text" id="nodeName" placeholder="Custom node name">
+      <div class="help-text">Custom node name for the module</div>
+    </div>
+
+    <div class="form-group">
+      <label for="routePath">Route Path</label>
+      <input type="text" id="routePath" placeholder='e.g., "dashboard/products"'>
+      <div class="help-text">Custom route path</div>
+    </div>
+
+    <div class="form-group">
+      <label for="apiEndpoints">API Endpoints</label>
+      <input type="text" id="apiEndpoints" placeholder='e.g., "list,get,create,update,delete"'>
+      <div class="help-text">Comma-separated list of API endpoints</div>
+    </div>
+
+    <div class="form-group">
+      <label for="nodeType">Node Type</label>
+      <input type="text" id="nodeType" placeholder='e.g., "id:string,name:string,price:number"'>
+      <div class="help-text">Custom node type definition</div>
+    </div>
+
+    <div class="form-group">
+      <label for="apiBase">API Base Path</label>
+      <input type="text" id="apiBase" placeholder='e.g., "/todos"'>
+      <div class="help-text">Base path for API endpoints</div>
+    </div>
+
+    <div class="switch-group">
+      <input type="checkbox" id="auth" checked>
+      <label for="auth">Enable Authentication</label>
+    </div>
+
+    <div class="preview">
+      <h3>Generated Command:</h3>
+      <pre id="commandPreview"></pre>
+    </div>
+
+    <button onclick="generateCommand()">Generate & Execute</button>
+
+    <script>
+      const vscode = acquireVsCodeApi();
+      
+      function updateCommandPreview() {
+        const moduleName = document.getElementById('moduleName').value;
+        const nodeName = document.getElementById('nodeName').value;
+        const routePath = document.getElementById('routePath').value;
+        const apiEndpoints = document.getElementById('apiEndpoints').value;
+        const nodeType = document.getElementById('nodeType').value;
+        const apiBase = document.getElementById('apiBase').value;
+        const auth = document.getElementById('auth').checked;
+
+        let command = \`npx create-jaseci-app add-module \${moduleName}\`;
+        if (nodeName) command += \` --node="\${nodeName}"\`;
+        if (routePath) command += \` --path="\${routePath}"\`;
+        if (apiEndpoints) command += \` --apis="\${apiEndpoints}"\`;
+        if (nodeType) command += \` --node-type="\${nodeType}"\`;
+        if (!auth) command += " --auth=no";
+        if (apiBase) command += \` --api-base="\${apiBase}"\`;
+
+        document.getElementById('commandPreview').textContent = command;
+      }
+
+      function generateCommand() {
+        const moduleName = document.getElementById('moduleName').value;
+        if (!moduleName) {
+          vscode.postMessage({
+            command: 'alert',
+            text: 'Module name is required'
+          });
+          return;
+        }
+
+        const workingDir = document.getElementById('workingDir');
+        if (workingDir.classList.contains('warning')) {
+          vscode.postMessage({
+            command: 'alert',
+            text: 'Please select a working directory first'
+          });
+          return;
+        }
+
+        vscode.postMessage({
+          command: 'generate',
+          moduleName: moduleName,
+          nodeName: document.getElementById('nodeName').value,
+          routePath: document.getElementById('routePath').value,
+          apiEndpoints: document.getElementById('apiEndpoints').value,
+          nodeType: document.getElementById('nodeType').value,
+          apiBase: document.getElementById('apiBase').value,
+          auth: document.getElementById('auth').checked
+        });
+      }
+
+      // Add event listeners to update preview
+      document.getElementById('moduleName').addEventListener('input', updateCommandPreview);
+      document.getElementById('nodeName').addEventListener('input', updateCommandPreview);
+      document.getElementById('routePath').addEventListener('input', updateCommandPreview);
+      document.getElementById('apiEndpoints').addEventListener('input', updateCommandPreview);
+      document.getElementById('nodeType').addEventListener('input', updateCommandPreview);
+      document.getElementById('apiBase').addEventListener('input', updateCommandPreview);
+      document.getElementById('auth').addEventListener('change', updateCommandPreview);
+
+      // Initial preview
+      updateCommandPreview();
+
+      // Listen for working directory updates
+      window.addEventListener('message', event => {
+        const message = event.data;
+        if (message.command === 'updateWorkingDir') {
+          const workingDir = document.getElementById('workingDir');
+          const pathElement = workingDir.querySelector('.path');
+          if (message.path) {
+            workingDir.classList.remove('warning');
+            pathElement.textContent = message.path;
+          } else {
+            workingDir.classList.add('warning');
+            pathElement.textContent = 'Select a working directory first';
+          }
+        }
+      });
+    </script>
+  </body>
+  </html>`;
+}
