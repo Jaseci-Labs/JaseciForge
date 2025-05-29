@@ -146,7 +146,7 @@ async function addNode(moduleName, nodeName, options) {
     );
 
     // Create hooks file
-    const hooksContent = `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions/${nodeName.toLowerCase()}-actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${moduleName.toLowerCase()}.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`;
+    const hooksContent = `import { useAppDispatch, useAppSelector } from '@/store/useStore';\nimport { fetch${nodeName}s } from '../actions/${nodeName.toLowerCase()}-actions';\nimport { ${nodeName}Node } from '@/nodes/${nodeName.toLowerCase()}-node';\n\nexport const use${nodeName}s = () => {\n  const dispatch = useAppDispatch();\n  const { items, isLoading, error } = useAppSelector(state => state.${nodeName.toLowerCase()});\n\n  const refresh = () => {\n    dispatch(fetch${nodeName}s());\n  };\n\n  return { items, isLoading, error, refresh };\n};\n`;
     await fs.writeFile(
       path.join(moduleDir, "hooks", `${nodeName.toLowerCase()}-hooks.ts`),
       hooksContent
@@ -188,7 +188,7 @@ async function addNode(moduleName, nodeName, options) {
       // Add reducer to store configuration at root level
       storeContent = storeContent.replace(
         /reducer: {([^}]*)}/,
-        `reducer: {$1\n    ${nodeName.toLowerCase()}s: ${nodeName.toLowerCase()}Reducer}`
+        `reducer: {$1\n    ${nodeName.toLowerCase()}: ${nodeName.toLowerCase()}Reducer}`
       );
 
       await fs.writeFile(storePath, storeContent);
