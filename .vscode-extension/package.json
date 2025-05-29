@@ -17,7 +17,8 @@
     "onCommand:jaseci-forge.cleanup",
     "onCommand:jaseci-forge.taurify",
     "onCommand:jaseci-forge.selectWorkingDir",
-    "onCommand:jaseci-forge.moduleGenerator"
+    "onCommand:jaseci-forge.moduleGenerator",
+    "onCommand:jaseci-forge.nodeGenerator"
   ],
   "main": "./out/extension.js",
   "scripts": {
@@ -64,6 +65,10 @@
       {
         "command": "jaseci-forge.moduleGenerator",
         "title": "Jaseci Forge: Open Module Generator"
+      },
+      {
+        "command": "jaseci-forge.nodeGenerator",
+        "title": "Jaseci Forge: Open Node Generator"
       }
     ],
     "configuration": {

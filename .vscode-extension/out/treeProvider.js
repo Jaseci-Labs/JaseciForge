@@ -62,7 +62,7 @@ class JaseciForgeTreeProvider {
                 new CommandItem("─────────────", undefined, "Separator", undefined, vscode.TreeItemCollapsibleState.None),
                 new CommandItem("✨ New App", "jaseci-forge.createApp", "Create a new JaseciStack application", "rocket"),
                 new CommandItem("🎨 Module Generator", "jaseci-forge.moduleGenerator", "Open module generator interface", "tools"),
-                new CommandItem("🧩 Add Node", "jaseci-forge.addNode", "Add a new node", "symbol-field"),
+                new CommandItem("🧩 Node Generator", "jaseci-forge.nodeGenerator", "Open node generator interface", "symbol-field"),
                 new CommandItem("🧹 Cleanup", "jaseci-forge.cleanup", "Remove the example app", "trash"),
                 new CommandItem("🖥️ Taurify", "jaseci-forge.taurify", "Convert to Tauri app", "desktop-download"),
             ];

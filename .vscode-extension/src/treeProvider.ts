@@ -69,9 +69,9 @@ export class JaseciForgeTreeProvider
           "tools"
         ),
         new CommandItem(
-          "🧩 Add Node",
-          "jaseci-forge.addNode",
-          "Add a new node",
+          "🧩 Node Generator",
+          "jaseci-forge.nodeGenerator",
+          "Open node generator interface",
           "symbol-field"
         ),
         new CommandItem(
