@@ -44,6 +44,7 @@ const commands_1 = require("./commands");
 const fs = __importStar(require("fs"));
 const ts = __importStar(require("typescript"));
 const aiAssistantWebview_1 = require("./aiAssistantWebview");
+const aiAssistant_1 = require("./aiAssistant");
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 class CommandItem extends vscode.TreeItem {
     constructor(label, commandId, tooltip, icon, collapsibleState = vscode
@@ -139,6 +140,7 @@ function activate(context) {
                     // Example: Scanner function for new node/module files
                     const scanResults = await scanNewModuleFiles(cwd, message.moduleName);
                     fileScannerProvider.refresh(scanResults);
+                    await autoFixFilesIfEnabled(context, scanResults);
                 }
                 catch (error) {
                     const execError = error;
@@ -208,6 +210,7 @@ function activate(context) {
                     // Example: Scanner function for new node/module files
                     const scanResults = await scanNewNodeFiles(cwd, message.moduleName, message.nodeName);
                     fileScannerProvider.refresh(scanResults);
+                    await autoFixFilesIfEnabled(context, scanResults);
                 }
                 catch (error) {
                     const execError = error;
@@ -823,5 +826,33 @@ function scanStoreIndexForReducer(storeIndexPath, reducerName) {
         results.push(new treeProvider_1.FileScanItem("index.ts", "error", `${reducerName} not registered in reducer`, storeIndexPath));
     }
     return results;
+}
+// In the add-node and add-module command handlers, after scanning and updating the sidebar:
+// If autoFixEnabled, run the AI fix workflow for files with syntax errors.
+async function autoFixFilesIfEnabled(context, scanResults) {
+    const autoFixEnabled = context.globalState.get("autoFixEnabled", false);
+    if (!autoFixEnabled)
+        return;
+    const apiKey = context.globalState.get("openaiApiKey", "");
+    if (!apiKey) {
+        vscode.window.showWarningMessage("OpenAI API key not set. Cannot auto-fix files.");
+        return;
+    }
+    const ai = new aiAssistant_1.AIAssistant(apiKey);
+    for (const item of scanResults) {
+        if (item.status === "error" && item.message.startsWith("Syntax error")) {
+            try {
+                const fileContent = fs.readFileSync(item.filePath, "utf8");
+                const fixed = await ai.fixCode(fileContent, item.message, "typescript");
+                if (fixed) {
+                    fs.writeFileSync(item.filePath, fixed, "utf8");
+                    vscode.window.showInformationMessage(`AI auto-fixed the file: ${item.filePath}`);
+                }
+            }
+            catch (err) {
+                vscode.window.showErrorMessage(`AI auto-fix failed for ${item.filePath}: ${err}`);
+            }
+        }
+    }
 }
 //# sourceMappingURL=extension.js.map

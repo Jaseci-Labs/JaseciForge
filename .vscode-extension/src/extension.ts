@@ -12,6 +12,7 @@ import { registerCommands } from "./commands";
 import * as fs from "fs";
 import * as ts from "typescript";
 import { AIAssistantWebviewProvider } from "./aiAssistantWebview";
+import { AIAssistant } from "./aiAssistant";
 
 const execAsync = promisify(exec);
 
@@ -165,6 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
                 message.moduleName
               );
               fileScannerProvider.refresh(scanResults);
+              await autoFixFilesIfEnabled(context, scanResults);
             } catch (error) {
               const execError = error as ExecError;
               outputChannel.appendLine(
@@ -275,6 +277,7 @@ export function activate(context: vscode.ExtensionContext) {
                 message.nodeName
               );
               fileScannerProvider.refresh(scanResults);
+              await autoFixFilesIfEnabled(context, scanResults);
             } catch (error) {
               const execError = error as ExecError;
               outputChannel.appendLine(
@@ -983,4 +986,43 @@ function scanStoreIndexForReducer(
     );
   }
   return results;
+}
+
+// In the add-node and add-module command handlers, after scanning and updating the sidebar:
+// If autoFixEnabled, run the AI fix workflow for files with syntax errors.
+async function autoFixFilesIfEnabled(
+  context: vscode.ExtensionContext,
+  scanResults: FileScanItem[]
+) {
+  const autoFixEnabled = context.globalState.get<boolean>(
+    "autoFixEnabled",
+    false
+  );
+  if (!autoFixEnabled) return;
+  const apiKey = context.globalState.get<string>("openaiApiKey", "");
+  if (!apiKey) {
+    vscode.window.showWarningMessage(
+      "OpenAI API key not set. Cannot auto-fix files."
+    );
+    return;
+  }
+  const ai = new AIAssistant(apiKey);
+  for (const item of scanResults) {
+    if (item.status === "error" && item.message.startsWith("Syntax error")) {
+      try {
+        const fileContent = fs.readFileSync(item.filePath, "utf8");
+        const fixed = await ai.fixCode(fileContent, item.message, "typescript");
+        if (fixed) {
+          fs.writeFileSync(item.filePath, fixed, "utf8");
+          vscode.window.showInformationMessage(
+            `AI auto-fixed the file: ${item.filePath}`
+          );
+        }
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `AI auto-fix failed for ${item.filePath}: ${err}`
+        );
+      }
+    }
+  }
 }
