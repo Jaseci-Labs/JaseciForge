@@ -137,10 +137,52 @@ function activate(context) {
                         args.push(`--api-base="${message.apiBase}"`);
                     await runCommandWithOutput("npx", args, cwd, outputChannel, "Add Module");
                     vscode.window.showInformationMessage(`Successfully added new module: ${message.moduleName}`);
-                    // Example: Scanner function for new node/module files
+                    // Scanner function for new module files
                     const scanResults = await scanNewModuleFiles(cwd, message.moduleName);
                     fileScannerProvider.refresh(scanResults);
                     await autoFixFilesIfEnabled(context, scanResults);
+                    // AI Assistant: Update the generated page according to the UI description
+                    const apiKey = context.globalState.get("openaiApiKey", "");
+                    vscode.window.showInformationMessage(`[Jaseci Forge] (AI) UI Description received: ${message.uiDescription}`);
+                    if (apiKey && message.uiDescription && message.moduleName) {
+                        const ai = new aiAssistant_1.AIAssistant(apiKey);
+                        const pagePath = path.join(cwd, "modules", message.moduleName, "pages", `${message.moduleName}Page.tsx`);
+                        vscode.window.showInformationMessage(`[Jaseci Forge] (AI) Checking if page exists: ${pagePath}`);
+                        const exists = fs.existsSync(pagePath);
+                        vscode.window.showInformationMessage(`[Jaseci Forge] (AI) Page exists: ${exists}`);
+                        if (exists) {
+                            vscode.window.showInformationMessage(`[Jaseci Forge] (AI) Entered file exists block.`);
+                            const pageContent = fs.readFileSync(pagePath, "utf8");
+                            const prompt = `
+Here is the current code for a React page:
+---
+${pageContent}
+---
+Please modify this code so the UI matches the following description:
+${message.uiDescription}
+Return only the updated code.
+                  `.trim();
+                            try {
+                                vscode.window.showInformationMessage(`[Jaseci Forge] (AI) Sending prompt to OpenAI...`);
+                                const updatedCode = await ai.fixCode(pageContent, prompt, "typescript");
+                                vscode.window.showInformationMessage(`[Jaseci Forge] (AI) AI response received. Length: ${updatedCode ? updatedCode.length : 0}`);
+                                if (updatedCode) {
+                                    const cleanCode = stripMarkdownCodeBlock(updatedCode);
+                                    fs.writeFileSync(pagePath, cleanCode, "utf8");
+                                    vscode.window.showInformationMessage(`AI updated the page for module: ${message.moduleName}`);
+                                }
+                                else {
+                                    vscode.window.showWarningMessage(`[Jaseci Forge] (AI) No code returned from AI for page update.`);
+                                }
+                            }
+                            catch (err) {
+                                vscode.window.showErrorMessage(`AI failed to update the page: ${err}`);
+                            }
+                        }
+                        else {
+                            vscode.window.showWarningMessage(`[Jaseci Forge] (AI) Page file does not exist: ${pagePath}`);
+                        }
+                    }
                 }
                 catch (error) {
                     const execError = error;
@@ -276,13 +318,17 @@ function getModuleGeneratorContent(webview) {
         margin-bottom: 5px;
         color: var(--vscode-foreground);
       }
-      input[type="text"] {
+      input[type="text"], textarea {
         width: 100%;
         padding: 8px;
         border: 1px solid var(--vscode-input-border);
         background: var(--vscode-input-background);
         color: var(--vscode-input-foreground);
         border-radius: 2px;
+      }
+      textarea {
+        min-height: 60px;
+        resize: vertical;
       }
       .help-text {
         font-size: 12px;
@@ -385,6 +431,12 @@ function getModuleGeneratorContent(webview) {
       <div class="help-text">Base path for API endpoints</div>
     </div>
 
+    <div class="form-group">
+      <label for="uiDescription">UI Description</label>
+      <textarea id="uiDescription" placeholder="Describe how the UI should look..." rows="3" style="width:100%"></textarea>
+      <div class="help-text">Describe the layout, components, and features you want for this module's page.</div>
+    </div>
+
     <div class="switch-group">
       <input type="checkbox" id="auth" checked>
       <label for="auth">Enable Authentication</label>
@@ -408,6 +460,7 @@ function getModuleGeneratorContent(webview) {
         const nodeType = document.getElementById('nodeType').value;
         const apiBase = document.getElementById('apiBase').value;
         const auth = document.getElementById('auth').checked;
+        const uiDescription = document.getElementById('uiDescription').value;
 
         let command = \`npx create-jaseci-app add-module \${moduleName}\`;
         if (nodeName) command += \` --node="\${nodeName}"\`;
@@ -416,6 +469,7 @@ function getModuleGeneratorContent(webview) {
         if (nodeType) command += \` --node-type="\${nodeType}"\`;
         if (!auth) command += " --auth=no";
         if (apiBase) command += \` --api-base="\${apiBase}"\`;
+        if (uiDescription) command += \` # UI: \${uiDescription}\`;
 
         document.getElementById('commandPreview').textContent = command;
       }
@@ -447,7 +501,8 @@ function getModuleGeneratorContent(webview) {
           apiEndpoints: document.getElementById('apiEndpoints').value,
           nodeType: document.getElementById('nodeType').value,
           apiBase: document.getElementById('apiBase').value,
-          auth: document.getElementById('auth').checked
+          auth: document.getElementById('auth').checked,
+          uiDescription: document.getElementById('uiDescription').value
         });
       }
 
@@ -459,6 +514,7 @@ function getModuleGeneratorContent(webview) {
       document.getElementById('nodeType').addEventListener('input', updateCommandPreview);
       document.getElementById('apiBase').addEventListener('input', updateCommandPreview);
       document.getElementById('auth').addEventListener('change', updateCommandPreview);
+      document.getElementById('uiDescription').addEventListener('input', updateCommandPreview);
 
       // Initial preview
       updateCommandPreview();
@@ -827,32 +883,52 @@ function scanStoreIndexForReducer(storeIndexPath, reducerName) {
     }
     return results;
 }
-// In the add-node and add-module command handlers, after scanning and updating the sidebar:
-// If autoFixEnabled, run the AI fix workflow for files with syntax errors.
+// Improved utility to strip Markdown code fences from AI responses
+function stripMarkdownCodeBlock(text) {
+    let code = text.trim();
+    // Remove opening code fence (with or without language)
+    code = code.replace(/^```[a-zA-Z]*\s*\n?/, "");
+    // Remove closing code fence (on its own line)
+    code = code.replace(/\n?```$/, "");
+    return code.trim();
+}
+// In autoFixFilesIfEnabled, add debug/info messages
 async function autoFixFilesIfEnabled(context, scanResults) {
     const autoFixEnabled = context.globalState.get("autoFixEnabled", false);
-    if (!autoFixEnabled)
+    if (!autoFixEnabled) {
+        vscode.window.showInformationMessage("[Jaseci Forge] Auto Fix is OFF.");
         return;
+    }
     const apiKey = context.globalState.get("openaiApiKey", "");
     if (!apiKey) {
-        vscode.window.showWarningMessage("OpenAI API key not set. Cannot auto-fix files.");
+        vscode.window.showWarningMessage("[Jaseci Forge] OpenAI API key not set. Cannot auto-fix files.");
         return;
     }
     const ai = new aiAssistant_1.AIAssistant(apiKey);
+    let anyFixed = false;
     for (const item of scanResults) {
         if (item.status === "error" && item.message.startsWith("Syntax error")) {
             try {
+                vscode.window.showInformationMessage(`[Jaseci Forge] Auto-fixing: ${item.filePath}`);
                 const fileContent = fs.readFileSync(item.filePath, "utf8");
                 const fixed = await ai.fixCode(fileContent, item.message, "typescript");
                 if (fixed) {
-                    fs.writeFileSync(item.filePath, fixed, "utf8");
-                    vscode.window.showInformationMessage(`AI auto-fixed the file: ${item.filePath}`);
+                    const cleanCode = stripMarkdownCodeBlock(fixed);
+                    fs.writeFileSync(item.filePath, cleanCode, "utf8");
+                    vscode.window.showInformationMessage(`[Jaseci Forge] AI auto-fixed the file: ${item.filePath}`);
+                    anyFixed = true;
+                }
+                else {
+                    vscode.window.showWarningMessage(`[Jaseci Forge] AI did not return a fix for: ${item.filePath}`);
                 }
             }
             catch (err) {
-                vscode.window.showErrorMessage(`AI auto-fix failed for ${item.filePath}: ${err}`);
+                vscode.window.showErrorMessage(`[Jaseci Forge] AI auto-fix failed for ${item.filePath}: ${err}`);
             }
         }
+    }
+    if (!anyFixed) {
+        vscode.window.showInformationMessage("[Jaseci Forge] No files were auto-fixed.");
     }
 }
 //# sourceMappingURL=extension.js.map
