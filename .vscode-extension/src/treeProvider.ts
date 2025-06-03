@@ -115,3 +115,51 @@ export class JaseciForgeTreeProvider
     this._onDidChangeTreeData.fire();
   }
 }
+
+export class FileScanItem extends vscode.TreeItem {
+  constructor(
+    public readonly label: string,
+    public readonly status: "ok" | "warn" | "error",
+    public readonly message: string,
+    public readonly filePath: string
+  ) {
+    super(label);
+    this.description = message;
+    this.iconPath =
+      status === "ok"
+        ? new vscode.ThemeIcon("check")
+        : status === "warn"
+        ? new vscode.ThemeIcon("warning")
+        : new vscode.ThemeIcon("error");
+    this.command = {
+      command: "vscode.open",
+      title: "Open File",
+      arguments: [vscode.Uri.file(filePath)],
+    };
+  }
+}
+
+export class FileScannerProvider
+  implements vscode.TreeDataProvider<FileScanItem>
+{
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    FileScanItem | undefined | void
+  > = new vscode.EventEmitter<FileScanItem | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<FileScanItem | undefined | void> =
+    this._onDidChangeTreeData.event;
+
+  private scanResults: FileScanItem[] = [];
+
+  refresh(results: FileScanItem[]): void {
+    this.scanResults = results;
+    this._onDidChangeTreeData.fire();
+  }
+
+  getTreeItem(element: FileScanItem): vscode.TreeItem {
+    return element;
+  }
+
+  getChildren(): FileScanItem[] {
+    return this.scanResults;
+  }
+}

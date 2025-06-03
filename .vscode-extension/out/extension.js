@@ -15,21 +15,34 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.activate = activate;
+exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const child_process_1 = require("child_process");
 const util_1 = require("util");
 const path = __importStar(require("path"));
 const treeProvider_1 = require("./treeProvider");
 const commands_1 = require("./commands");
+const fs = __importStar(require("fs"));
+const ts = __importStar(require("typescript"));
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 class CommandItem extends vscode.TreeItem {
     constructor(label, commandId, tooltip, icon, collapsibleState = vscode
@@ -53,6 +66,9 @@ function activate(context) {
     // Register Tree View
     const treeProvider = new treeProvider_1.JaseciForgeTreeProvider(() => workingDirectory);
     vscode.window.registerTreeDataProvider("jaseciForgeCommands", treeProvider);
+    // Register File Scanner Report Tree View
+    const fileScannerProvider = new treeProvider_1.FileScannerProvider();
+    vscode.window.registerTreeDataProvider("jaseciForgeFileScanner", fileScannerProvider);
     // Create Output Channel
     const outputChannel = vscode.window.createOutputChannel("Jaseci Forge");
     // Function to update working directory
@@ -115,6 +131,9 @@ function activate(context) {
                         args.push(`--api-base="${message.apiBase}"`);
                     await runCommandWithOutput("npx", args, cwd, outputChannel, "Add Module");
                     vscode.window.showInformationMessage(`Successfully added new module: ${message.moduleName}`);
+                    // Example: Scanner function for new node/module files
+                    const scanResults = await scanNewModuleFiles(cwd, message.moduleName);
+                    fileScannerProvider.refresh(scanResults);
                 }
                 catch (error) {
                     const execError = error;
@@ -181,6 +200,9 @@ function activate(context) {
                         args.push(`--api-base="${message.apiBase}"`);
                     await runCommandWithOutput("npx", args, cwd, outputChannel, "Add Node");
                     vscode.window.showInformationMessage(`Successfully added new node: ${message.nodeName} to module: ${message.moduleName}`);
+                    // Example: Scanner function for new node/module files
+                    const scanResults = await scanNewNodeFiles(cwd, message.moduleName, message.nodeName);
+                    fileScannerProvider.refresh(scanResults);
                 }
                 catch (error) {
                     const execError = error;
@@ -224,9 +246,7 @@ function activate(context) {
         });
     }
 }
-exports.activate = activate;
 function deactivate() { }
-exports.deactivate = deactivate;
 function getModuleGeneratorContent(webview) {
     return `<!DOCTYPE html>
   <html lang="en">
@@ -702,5 +722,101 @@ function getNodeGeneratorContent(webview, moduleNames) {
     </script>
   </body>
   </html>`;
+}
+// Utility to check for syntax errors
+function checkSyntax(filePath) {
+    try {
+        const content = fs.readFileSync(filePath, "utf8");
+        const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
+        // Use parseDiagnostics if available, otherwise fallback to getPreEmitDiagnostics
+        const diagnostics = sourceFile.parseDiagnostics ||
+            ts.getPreEmitDiagnostics(ts.createProgram([filePath], {}), sourceFile);
+        if (diagnostics.length > 0) {
+            return diagnostics
+                .map((d) => typeof d.messageText === "string"
+                ? d.messageText
+                : JSON.stringify(d.messageText))
+                .join("; ");
+        }
+        return null;
+    }
+    catch (err) {
+        return "File could not be read or parsed";
+    }
+}
+// Enhanced file check
+function checkFileWithSyntax(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return new treeProvider_1.FileScanItem(path.basename(filePath), "error", "File missing", filePath);
+    }
+    const syntaxError = checkSyntax(filePath);
+    if (syntaxError) {
+        return new treeProvider_1.FileScanItem(path.basename(filePath), "error", `Syntax error: ${syntaxError}`, filePath);
+    }
+    return new treeProvider_1.FileScanItem(path.basename(filePath), "ok", "File exists and is valid", filePath);
+}
+// Scanner function for new module files (checks for index.ts in actions, hooks, services, and store/index.ts)
+async function scanNewModuleFiles(rootPath, moduleName) {
+    const moduleDir = path.join(rootPath, "modules", moduleName);
+    const expectedFiles = [
+        path.join(moduleDir, "services", "index.ts"),
+        path.join(moduleDir, "actions", "index.ts"),
+        path.join(moduleDir, "hooks", "index.ts"),
+    ];
+    const results = [];
+    for (const file of expectedFiles) {
+        results.push(checkFileWithSyntax(file));
+    }
+    // Check store/index.ts
+    const storeIndexPath = path.join(rootPath, "store", "index.ts");
+    results.push(checkFileWithSyntax(storeIndexPath));
+    results.push(...scanStoreIndexForReducer(storeIndexPath, moduleName));
+    return results;
+}
+// Scanner function for new node files (checks for node-specific files and store/index.ts)
+async function scanNewNodeFiles(rootPath, moduleName, nodeName) {
+    const moduleDir = path.join(rootPath, "modules", moduleName);
+    const expectedFiles = [
+        path.join(moduleDir, "services", `${nodeName.toLowerCase()}-api.ts`),
+        path.join(moduleDir, "actions", `${nodeName.toLowerCase()}-actions.ts`),
+        path.join(moduleDir, "hooks", `${nodeName.toLowerCase()}-hooks.ts`),
+        path.join(rootPath, "store", `${nodeName.toLowerCase()}Slice.ts`),
+        path.join(rootPath, "nodes", `${nodeName.toLowerCase()}-node.ts`),
+    ];
+    const results = [];
+    for (const file of expectedFiles) {
+        results.push(checkFileWithSyntax(file));
+    }
+    // Check store/index.ts
+    const storeIndexPath = path.join(rootPath, "store", "index.ts");
+    results.push(checkFileWithSyntax(storeIndexPath));
+    results.push(...scanStoreIndexForReducer(storeIndexPath, nodeName));
+    return results;
+}
+// Check store/index.ts for import and reducer registration
+function scanStoreIndexForReducer(storeIndexPath, reducerName) {
+    const results = [];
+    if (!fs.existsSync(storeIndexPath)) {
+        results.push(new treeProvider_1.FileScanItem("index.ts", "error", "store/index.ts missing", storeIndexPath));
+        return results;
+    }
+    const content = fs.readFileSync(storeIndexPath, "utf8");
+    // Check for import
+    const importRegex = new RegExp(`import\\s+${reducerName}Reducer\\s+from\\s+['\"]/\\./${reducerName}Slice['\"];`);
+    if (importRegex.test(content)) {
+        results.push(new treeProvider_1.FileScanItem("index.ts", "ok", `Import for ${reducerName}Reducer found`, storeIndexPath));
+    }
+    else {
+        results.push(new treeProvider_1.FileScanItem("index.ts", "error", `Import for ${reducerName}Reducer missing`, storeIndexPath));
+    }
+    // Check for registration in reducer object
+    const reducerRegex = new RegExp(`${reducerName}:\\s*${reducerName}Reducer`);
+    if (reducerRegex.test(content)) {
+        results.push(new treeProvider_1.FileScanItem("index.ts", "ok", `${reducerName} registered in reducer`, storeIndexPath));
+    }
+    else {
+        results.push(new treeProvider_1.FileScanItem("index.ts", "error", `${reducerName} not registered in reducer`, storeIndexPath));
+    }
+    return results;
 }
 //# sourceMappingURL=extension.js.map

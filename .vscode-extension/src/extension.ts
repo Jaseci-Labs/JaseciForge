@@ -2,8 +2,14 @@ import * as vscode from "vscode";
 import { exec, spawn } from "child_process";
 import { promisify } from "util";
 import * as path from "path";
-import { JaseciForgeTreeProvider } from "./treeProvider";
+import {
+  JaseciForgeTreeProvider,
+  FileScannerProvider,
+  FileScanItem,
+} from "./treeProvider";
 import { registerCommands } from "./commands";
+import * as fs from "fs";
+import * as ts from "typescript";
 
 const execAsync = promisify(exec);
 
@@ -40,6 +46,13 @@ export function activate(context: vscode.ExtensionContext) {
   // Register Tree View
   const treeProvider = new JaseciForgeTreeProvider(() => workingDirectory);
   vscode.window.registerTreeDataProvider("jaseciForgeCommands", treeProvider);
+
+  // Register File Scanner Report Tree View
+  const fileScannerProvider = new FileScannerProvider();
+  vscode.window.registerTreeDataProvider(
+    "jaseciForgeFileScanner",
+    fileScannerProvider
+  );
 
   // Create Output Channel
   const outputChannel = vscode.window.createOutputChannel("Jaseci Forge");
@@ -132,6 +145,13 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.window.showInformationMessage(
                 `Successfully added new module: ${message.moduleName}`
               );
+
+              // Example: Scanner function for new node/module files
+              const scanResults = await scanNewModuleFiles(
+                cwd,
+                message.moduleName
+              );
+              fileScannerProvider.refresh(scanResults);
             } catch (error) {
               const execError = error as ExecError;
               outputChannel.appendLine(
@@ -234,6 +254,14 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.window.showInformationMessage(
                 `Successfully added new node: ${message.nodeName} to module: ${message.moduleName}`
               );
+
+              // Example: Scanner function for new node/module files
+              const scanResults = await scanNewNodeFiles(
+                cwd,
+                message.moduleName,
+                message.nodeName
+              );
+              fileScannerProvider.refresh(scanResults);
             } catch (error) {
               const execError = error as ExecError;
               outputChannel.appendLine(
@@ -774,4 +802,172 @@ function getNodeGeneratorContent(
     </script>
   </body>
   </html>`;
+}
+
+// Utility to check for syntax errors
+function checkSyntax(filePath: string): string | null {
+  try {
+    const content = fs.readFileSync(filePath, "utf8");
+    const sourceFile = ts.createSourceFile(
+      filePath,
+      content,
+      ts.ScriptTarget.Latest,
+      true
+    );
+    // Use parseDiagnostics if available, otherwise fallback to getPreEmitDiagnostics
+    const diagnostics: readonly ts.Diagnostic[] =
+      (sourceFile as any).parseDiagnostics ||
+      ts.getPreEmitDiagnostics(ts.createProgram([filePath], {}), sourceFile);
+    if (diagnostics.length > 0) {
+      return diagnostics
+        .map((d: ts.Diagnostic) =>
+          typeof d.messageText === "string"
+            ? d.messageText
+            : JSON.stringify(d.messageText)
+        )
+        .join("; ");
+    }
+    return null;
+  } catch (err) {
+    return "File could not be read or parsed";
+  }
+}
+
+// Enhanced file check
+function checkFileWithSyntax(filePath: string): FileScanItem {
+  if (!fs.existsSync(filePath)) {
+    return new FileScanItem(
+      path.basename(filePath),
+      "error",
+      "File missing",
+      filePath
+    );
+  }
+  const syntaxError = checkSyntax(filePath);
+  if (syntaxError) {
+    return new FileScanItem(
+      path.basename(filePath),
+      "error",
+      `Syntax error: ${syntaxError}`,
+      filePath
+    );
+  }
+  return new FileScanItem(
+    path.basename(filePath),
+    "ok",
+    "File exists and is valid",
+    filePath
+  );
+}
+
+// Scanner function for new module files (checks for index.ts in actions, hooks, services, and store/index.ts)
+async function scanNewModuleFiles(
+  rootPath: string,
+  moduleName: string
+): Promise<FileScanItem[]> {
+  const moduleDir = path.join(rootPath, "modules", moduleName);
+  const expectedFiles = [
+    path.join(moduleDir, "services", "index.ts"),
+    path.join(moduleDir, "actions", "index.ts"),
+    path.join(moduleDir, "hooks", "index.ts"),
+  ];
+  const results: FileScanItem[] = [];
+  for (const file of expectedFiles) {
+    results.push(checkFileWithSyntax(file));
+  }
+  // Check store/index.ts
+  const storeIndexPath = path.join(rootPath, "store", "index.ts");
+  results.push(checkFileWithSyntax(storeIndexPath));
+  results.push(...scanStoreIndexForReducer(storeIndexPath, moduleName));
+  return results;
+}
+
+// Scanner function for new node files (checks for node-specific files and store/index.ts)
+async function scanNewNodeFiles(
+  rootPath: string,
+  moduleName: string,
+  nodeName: string
+): Promise<FileScanItem[]> {
+  const moduleDir = path.join(rootPath, "modules", moduleName);
+  const expectedFiles = [
+    path.join(moduleDir, "services", `${nodeName.toLowerCase()}-api.ts`),
+    path.join(moduleDir, "actions", `${nodeName.toLowerCase()}-actions.ts`),
+    path.join(moduleDir, "hooks", `${nodeName.toLowerCase()}-hooks.ts`),
+    path.join(rootPath, "store", `${nodeName.toLowerCase()}Slice.ts`),
+    path.join(rootPath, "nodes", `${nodeName.toLowerCase()}-node.ts`),
+  ];
+  const results: FileScanItem[] = [];
+  for (const file of expectedFiles) {
+    results.push(checkFileWithSyntax(file));
+  }
+  // Check store/index.ts
+  const storeIndexPath = path.join(rootPath, "store", "index.ts");
+  results.push(checkFileWithSyntax(storeIndexPath));
+  results.push(...scanStoreIndexForReducer(storeIndexPath, nodeName));
+  return results;
+}
+
+// Check store/index.ts for import and reducer registration
+function scanStoreIndexForReducer(
+  storeIndexPath: string,
+  reducerName: string
+): FileScanItem[] {
+  const results: FileScanItem[] = [];
+  if (!fs.existsSync(storeIndexPath)) {
+    results.push(
+      new FileScanItem(
+        "index.ts",
+        "error",
+        "store/index.ts missing",
+        storeIndexPath
+      )
+    );
+    return results;
+  }
+  const content = fs.readFileSync(storeIndexPath, "utf8");
+  // Check for import
+  const importRegex = new RegExp(
+    `import\\s+${reducerName}Reducer\\s+from\\s+['\"]/\\./${reducerName}Slice['\"];`
+  );
+  if (importRegex.test(content)) {
+    results.push(
+      new FileScanItem(
+        "index.ts",
+        "ok",
+        `Import for ${reducerName}Reducer found`,
+        storeIndexPath
+      )
+    );
+  } else {
+    results.push(
+      new FileScanItem(
+        "index.ts",
+        "error",
+        `Import for ${reducerName}Reducer missing`,
+        storeIndexPath
+      )
+    );
+  }
+  // Check for registration in reducer object
+  const reducerRegex = new RegExp(`${reducerName}:\\s*${reducerName}Reducer`);
+  if (reducerRegex.test(content)) {
+    results.push(
+      new FileScanItem(
+        "index.ts",
+        "ok",
+        `${reducerName} registered in reducer`,
+        storeIndexPath
+      )
+    );
+  } else {
+    results.push(
+      new FileScanItem(
+        "index.ts",
+        "error",
+        `${reducerName} not registered in reducer`,
+        storeIndexPath
+      )
+    );
+  }
+  return results;
 }

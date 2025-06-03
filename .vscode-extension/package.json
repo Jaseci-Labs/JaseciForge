@@ -42,7 +42,7 @@
     "@typescript-eslint/parser": "^5.30.0",
     "eslint": "^8.13.0",
     "rimraf": "^3.0.2",
-    "typescript": "^4.7.2"
+    "typescript": "^5.8.3"
   },
   "contributes": {
     "commands": [
@@ -110,6 +110,11 @@
           "type": "tree",
           "id": "jaseciForgeCommands",
           "name": "Jaseci Forge Commands"
+        },
+        {
+          "type": "tree",
+          "id": "jaseciForgeFileScanner",
+          "name": "File Scanner Report"
         }
       ]
     }

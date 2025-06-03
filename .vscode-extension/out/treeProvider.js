@@ -15,15 +15,25 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JaseciForgeTreeProvider = exports.CommandItem = void 0;
+exports.FileScannerProvider = exports.FileScanItem = exports.JaseciForgeTreeProvider = exports.CommandItem = void 0;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 class CommandItem extends vscode.TreeItem {
@@ -82,4 +92,44 @@ class JaseciForgeTreeProvider {
     }
 }
 exports.JaseciForgeTreeProvider = JaseciForgeTreeProvider;
+class FileScanItem extends vscode.TreeItem {
+    constructor(label, status, message, filePath) {
+        super(label);
+        this.label = label;
+        this.status = status;
+        this.message = message;
+        this.filePath = filePath;
+        this.description = message;
+        this.iconPath =
+            status === "ok"
+                ? new vscode.ThemeIcon("check")
+                : status === "warn"
+                    ? new vscode.ThemeIcon("warning")
+                    : new vscode.ThemeIcon("error");
+        this.command = {
+            command: "vscode.open",
+            title: "Open File",
+            arguments: [vscode.Uri.file(filePath)],
+        };
+    }
+}
+exports.FileScanItem = FileScanItem;
+class FileScannerProvider {
+    constructor() {
+        this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.scanResults = [];
+    }
+    refresh(results) {
+        this.scanResults = results;
+        this._onDidChangeTreeData.fire();
+    }
+    getTreeItem(element) {
+        return element;
+    }
+    getChildren() {
+        return this.scanResults;
+    }
+}
+exports.FileScannerProvider = FileScannerProvider;
 //# sourceMappingURL=treeProvider.js.map
