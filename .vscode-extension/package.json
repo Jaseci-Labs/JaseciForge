@@ -115,8 +115,16 @@
           "type": "tree",
           "id": "jaseciForgeFileScanner",
           "name": "File Scanner Report"
+        },
+        {
+          "type": "webview",
+          "id": "jaseciForgeAIView",
+          "name": "AI Assistant"
         }
       ]
     }
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
   }
 }

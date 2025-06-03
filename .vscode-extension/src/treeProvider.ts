@@ -163,3 +163,19 @@ export class FileScannerProvider
     return this.scanResults;
   }
 }
+
+export function registerAIKeyCommand(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand("jaseci-forge.setOpenAIKey", async () => {
+      const key = await vscode.window.showInputBox({
+        prompt: "Enter your OpenAI API Key",
+        ignoreFocusOut: true,
+        password: true,
+      });
+      if (key) {
+        await context.globalState.update("openaiApiKey", key);
+        vscode.window.showInformationMessage("OpenAI API Key saved!");
+      }
+    })
+  );
+}

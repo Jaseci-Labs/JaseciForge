@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileScannerProvider = exports.FileScanItem = exports.JaseciForgeTreeProvider = exports.CommandItem = void 0;
+exports.registerAIKeyCommand = registerAIKeyCommand;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 class CommandItem extends vscode.TreeItem {
@@ -132,4 +133,17 @@ class FileScannerProvider {
     }
 }
 exports.FileScannerProvider = FileScannerProvider;
+function registerAIKeyCommand(context) {
+    context.subscriptions.push(vscode.commands.registerCommand("jaseci-forge.setOpenAIKey", async () => {
+        const key = await vscode.window.showInputBox({
+            prompt: "Enter your OpenAI API Key",
+            ignoreFocusOut: true,
+            password: true,
+        });
+        if (key) {
+            await context.globalState.update("openaiApiKey", key);
+            vscode.window.showInformationMessage("OpenAI API Key saved!");
+        }
+    }));
+}
 //# sourceMappingURL=treeProvider.js.map

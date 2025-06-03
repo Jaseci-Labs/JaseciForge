@@ -43,6 +43,7 @@ const treeProvider_1 = require("./treeProvider");
 const commands_1 = require("./commands");
 const fs = __importStar(require("fs"));
 const ts = __importStar(require("typescript"));
+const aiAssistantWebview_1 = require("./aiAssistantWebview");
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 class CommandItem extends vscode.TreeItem {
     constructor(label, commandId, tooltip, icon, collapsibleState = vscode
@@ -79,6 +80,10 @@ function activate(context) {
     }
     // Register Commands
     (0, commands_1.registerCommands)(context, outputChannel, treeProvider, () => workingDirectory, updateWorkingDirectory);
+    // Register AI Key input command
+    (0, treeProvider_1.registerAIKeyCommand)(context);
+    // Register AI Assistant Webview View
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider("jaseciForgeAIView", new aiAssistantWebview_1.AIAssistantWebviewProvider(context)));
     // Module Generator Command
     let moduleGenerator = vscode.commands.registerCommand("jaseci-forge.moduleGenerator", () => {
         const panel = vscode.window.createWebviewPanel("moduleGenerator", "Module Generator", vscode.ViewColumn.One, {

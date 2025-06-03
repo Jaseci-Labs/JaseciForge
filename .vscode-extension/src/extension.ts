@@ -6,10 +6,12 @@ import {
   JaseciForgeTreeProvider,
   FileScannerProvider,
   FileScanItem,
+  registerAIKeyCommand,
 } from "./treeProvider";
 import { registerCommands } from "./commands";
 import * as fs from "fs";
 import * as ts from "typescript";
+import { AIAssistantWebviewProvider } from "./aiAssistantWebview";
 
 const execAsync = promisify(exec);
 
@@ -71,6 +73,17 @@ export function activate(context: vscode.ExtensionContext) {
     treeProvider,
     () => workingDirectory,
     updateWorkingDirectory
+  );
+
+  // Register AI Key input command
+  registerAIKeyCommand(context);
+
+  // Register AI Assistant Webview View
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      "jaseciForgeAIView",
+      new AIAssistantWebviewProvider(context)
+    )
   );
 
   // Module Generator Command
