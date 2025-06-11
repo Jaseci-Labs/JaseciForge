@@ -47,7 +47,7 @@ const handleResponseError = (error: any) => {
     if (error.response.status === 401) {
       // Handle unauthorized (e.g., redirect to login)
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
+        localStorage.removeItem(APP_KEYS.TOKEN);
         // Could redirect to login page here
       }
     }
